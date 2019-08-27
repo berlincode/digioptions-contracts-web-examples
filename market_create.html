@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html class="" lang="en">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="UTF-8">
+    <title>Markets create and settlement example</title>
+
+    <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css" />
+
+    <script type="text/javascript" src="node_modules/requirejs/require.js"></script>
+    <script type="text/javascript" src="node_modules/jquery/dist/jquery.min.js"></script>
+    <script type="text/javascript" src="node_modules/bootstrap/dist/js/bootstrap.min.js" ></script>
+
+    <style>
+.col-sm-6 {
+    width: 50% !important;
+}
+.col-sm-9 {
+    width: 75% !important;
+}
+    </style>
+</head>
+<body>
+    <h1>Markets create and settlement example</h1>
+
+    <div id="modal" class="modal fade" style="display: none">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header" id="modalheader">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title" id="modaltitle">Modal title</h4>
+          </div>
+          <div class="modal-body">
+            <pre id="modalbody">
+            </pre>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Ok</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p>
+        This is an example how to create markets.
+    </p>
+    <p>
+        This online example is part of <a href="https://github.com/berlincode/digioptions-contracts-web-examples">https://github.com/berlincode/digioptions-contracts-web-examples</a>
+    </p>
+
+    <hr/>
+    <h2>Base data</h2>
+    <div class="container">
+      <form class="form-horizontal">
+
+        <div class="form-group row">
+          <label class="col-sm-3 control-label" for="network">network:</label>
+          <input class="form-control col-sm-9" type="text" id="network" name="name" placeholder="" value="" disabled />
+        </div>
+        <div class="form-group">
+          <label class="col-sm-3 control-label" for="signingKey">signing key:</label>
+          <div class="input-group col-sm-9">
+            <input class="form-control" type="text" id="signingKey" name="signingKey" placeholder="" value="" />
+            <div class="input-group-btn">
+              <button type="button" class="btn btn-default" id="createSigningKey" name="createSigningKey" value="1" disabled>create signing key</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="col-sm-3 control-label" for="contract">contract:</label>
+          <div class="input-group col-sm-9">
+            <input class="form-control " type="text" id="contract" name="contract" placeholder="" value="" />
+            <div class="input-group-btn">
+                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Default contracts <span class="caret"></span></button>
+                <ul class="dropdown-menu pull-right" id=dropdownContractList>
+                </ul>
+            </div>
+          </div>
+        </div>
+
+        <p>
+            The (private) signing key is used create and settle a market. For market settling use same private signing key that was
+            used to create the market. Keep it save!
+        </p>
+      </form>
+    </div>
+
+    <hr/>
+    <h2>Market create</h2>
+    <div class="container">
+      <form class="form-horizontal">
+
+        <div class="form-group">
+          <label class="col-sm-3 control-label" for="name">name:</label>
+          <input class="form-control col-sm-9" type="text" id="name" name="name" placeholder="ETH/USD" value="Test-Coin" />
+        </div>
+        <div class="form-group">
+          <label class="col-sm-3 control-label" for="strikes">strikes:</label>
+          <input class="form-control col-sm-9" type="text" id="strikes" name="strikes" placeholder="10.0, 11.0" value="996.0, 1000.0, 1004.0, 1008.0" />
+        </div>
+        <div class="form-group">
+          <label class="col-sm-3 control-label" for="expirationdatetime">expirationDatetime:</label>
+          <input class="form-control col-sm-9" type="text" id="expirationdatetime" name="expirationdatetime" value="" />
+        </div>
+        <div class="form-group">
+          <label class="col-sm-3 control-label" for="ndigit">ndigit:</label>
+          <input class="form-control col-sm-9" type="text" id="ndigit" name="ndigit" value="2" />
+        </div>
+        <div class="form-group">
+          <label class="col-sm-3 control-label" for="baseUnitExp">baseUnitExp:</label>
+          <input class="form-control col-sm-9" type="text" id="baseUnitExp" name="baseUnitExp" value="18" />
+        </div>
+        <div class="form-group">
+          <label class="col-sm-3 control-label" for="objectionPeriod">objectionPeriod:</label>
+          <input class="form-control col-sm-9" type="text" id="objectionPeriod" name="objectionPeriod" value="3600" />
+        </div>
+        <div class="form-group">
+          <label class="col-sm-3 control-label" for="transactionFeePercent0">transactionFee0: (in percent)</label>
+          <input class="form-control col-sm-9" type="text" id="transactionFeePercent0" name="transactionFeePercent0" value="0.0" />
+        </div>
+        <div class="form-group">
+          <label class="col-sm-3 control-label" for="transactionFeePercent1">transactionFee1: (in percent)</label>
+          <input class="form-control col-sm-9" type="text" id="transactionFeePercent1" name="transactionFeePercent1" value="0.0" />
+        </div>
+        <div class="form-group">
+          <label class="col-sm-3 control-label" for="feeTaker0">fee taker 0: (address)</label>
+          <input class="form-control col-sm-9" type="text" id="feeTaker0" name="feeTaker0" value="0x0000000000000000000000000000000000000000" />
+        </div>
+        <div class="form-group">
+          <label class="col-sm-3 control-label" for="feeTaker1">fee taker 1: (address)</label>
+          <input class="form-control col-sm-9" type="text" id="feeTaker1" name="feeTaker1" value="0x0000000000000000000000000000000000000000" />
+        </div>
+        <div class="form-group">
+          <div class="col-sm-offset-3 col-sm-9" style="padding-left: 0;">
+            <button type="submit" class="btn btn-primary" id="marketNew" name="marketNew" value="1" disabled>create new market</button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <hr/>
+    <h2>Market settle</h2>
+    <div class="container">
+      <form class="form-horizontal">
+
+        <div class="form-group">
+          <label class="col-sm-3 control-label" for="factHash">factHash</label>
+          <input class="form-control col-sm-9" type="text" id="factHash" name="factHash" value="" placeholder="0x000..." />
+        </div>
+
+        <div class="form-group">
+          <label class="col-sm-3 control-label" for="marketHash">marketHash</label>
+          <input class="form-control col-sm-9" type="text" id="marketHash" name="marketHash" value="" placeholder="0x000..." />
+        </div>
+
+        <div class="form-group">
+          <label class="col-sm-3 control-label" for="quote">quote</label>
+          <input class="form-control col-sm-9" type="text" id="quote" name="quote" value="" placeholder="1.234" />
+        </div>
+
+        <div class="form-group">
+          <div class="col-sm-offset-3 col-sm-9" style="padding-left: 0;">
+            <button type="submit" class="btn btn-primary" id="marketSettle" name="marketSettle" value="1" disabled>settle market</button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <script>
+
+var setInputFormByID = function(id, value){
+  var elm = document.getElementById(id);
+  if (elm){
+    elm.value = value;
+  }
+};
+
+var date = new Date();
+date.setTime(Math.floor((date.getTime() + (10* 60*60*1000)) / (60*60*1000)) * 60*60*1000);
+setInputFormByID('expirationdatetime', date.toUTCString());
+
+var parameters = (function(){
+  // parse browser's hash/query-string append parameters and try to fill out form input values (intended for testing)
+  // e.g. .../market_create.html#?contract=0x0Eb7e02ED6C8a55f72551E8677eE3bbB25263016&signingKey=0x728c08b6404f3da74525183e0cf444483352e8f13a48ee40ece9185306ec7419
+  var query = window.location.hash.replace(/^#?\??/, '');
+  var vars = query.split('&');
+  var params = [];
+  for (var i = 0; i < vars.length; i++) {
+    var pair = vars[i].split('=');
+    var key = decodeURIComponent(pair[0]);
+    var value = decodeURIComponent(pair[1]);
+    params[key] = value;
+    setInputFormByID(key, value);
+  }
+  return params;
+})();
+
+require.config({
+  paths: {
+    'web3': 'assets/js/web3.min'
+  },
+  packages: [
+    {
+      name: 'factsigner',
+      location: 'node_modules/factsigner',
+      main: 'js/index.js'
+    },
+    {
+      name: 'digioptions-tools.js',
+      location: 'node_modules/digioptions-tools.js',
+      main: 'js/index.js'
+    },
+    {
+      name: 'digioptions-contracts.js',
+      location: 'node_modules/digioptions-contracts.js',
+      main: 'js/index.js'
+    },
+    {
+      name: 'strophe.js',
+      location: 'node_modules/strophe.js',
+      main: 'strophe.js'
+    }
+  ]
+});
+
+/* show an error to the user */
+var modal_error = function(str){
+  $('#modal').modal();
+  document.getElementById('modaltitle').textContent = 'Error';
+  document.getElementById('modalbody').textContent = str;
+  document.getElementById('modalheader').setAttribute('style', 'background-color: #d9534f; border-top-left-radius: 5px; border-top-right-radius: 5px;');
+};
+
+var modal_success = function(str){
+  $('#modal').modal();
+  document.getElementById('modaltitle').textContent = 'Success';
+  document.getElementById('modalbody').textContent = str;
+  document.getElementById('modalheader').setAttribute('style', 'background-color: #0480be; border-top-left-radius: 5px; border-top-right-radius: 5px;');
+};
+require(
+  [
+    'web3',
+    'factsigner',
+    'digioptions-contracts.js',
+    'digioptions-tools.js'
+  ],
+  function(Web3, factsigner, digioptionsContracts, digioptionsTools){
+    var dataNetworks = digioptionsTools.dataNetworks;
+
+    if(typeof window.web3 === 'undefined') {
+      modal_error('no web3 provider (i.e. metamask) found!');
+      return;
+    }
+
+    /* use MetaMask et al only with public networks */
+    console.log('Found web3 instance.');
+
+    var web3js = new Web3(window.web3.currentProvider);
+    web3js.eth.net.getNetworkType()
+      .then(function(network){
+        setInputFormByID('network', network);
+
+        var dataNetwork = dataNetworks[network];
+        //var validNetworks = Object.keys(dataNetworks).filter(function(name){return dataNetworks[name].contractDescriptions.length != 0;});
+
+
+        if ((! dataNetwork) || (! dataNetwork.contractDescriptions)){
+          var header = document.createElement('li');
+          header.setAttribute('class', 'dropdown-header');
+          header.textContent = 'No default contracts for network "' + network + '" known';
+          document.getElementById('dropdownContractList').appendChild(header);
+        } else {
+
+          var contracts = {};
+          for (var contractDescriptionIdx in dataNetwork.contractDescriptions){
+            var addr = dataNetwork.contractDescriptions[contractDescriptionIdx].addr;
+            var contract = new web3js.eth.Contract(
+              digioptionsContracts.digioptionsMarketsAbi(),
+              addr
+            );
+
+            contract.methods.getContractInfo().call()
+              .then(function(contractInfo){
+                var marketsAddr = contractInfo && contractInfo.digiOptionsMarketsAddr;
+                if (marketsAddr && (!contracts[marketsAddr])){
+                  contracts[contractInfo.digiOptionsMarketsAddr] = true; // add each addr only once
+
+                  var anchor = document.createElement('a');
+                  anchor.setAttribute('href', '#');
+                  anchor.onclick = function(evt){
+                    evt.preventDefault();
+                    setInputFormByID('contract', marketsAddr);
+                  };
+                  anchor.textContent = marketsAddr;
+
+                  var elm = document.createElement('li');
+                  elm.appendChild(anchor);
+                  document.getElementById('dropdownContractList').appendChild(elm);
+                }
+              })
+              .catch(function(/*err*/){
+                /* ignore error */
+              });
+        
+          }
+        }
+
+        document.getElementById('createSigningKey').onclick = function(evt){
+          evt.preventDefault();
+          setInputFormByID('signingKey', web3js.eth.accounts.create().privateKey);
+        };
+
+        document.getElementById('marketNew').onclick = function(evt){
+          evt.preventDefault();
+          console.log('click create new market');
+          try {
+            var accountSign = web3js.eth.accounts.privateKeyToAccount(document.getElementById('signingKey').value);
+            console.log('accountSign:', accountSign);
+            var contractAddr = document.getElementById('contract').value;
+            console.log('contractAddr:', contractAddr);
+
+            if (! web3js.utils.isAddress(contractAddr)){
+              throw new Error('Invalid address "' + contractAddr + '" !');
+            }
+
+            var marketsContract = new web3js.eth.Contract(
+              digioptionsContracts.digioptionsMarketsAbi(),
+              contractAddr
+            );
+
+            var expirationDatetime = (new Date(document.getElementById('expirationdatetime').value)).getTime()/1000;
+            console.log('expirationDatetime:', expirationDatetime);
+
+            var marketBaseData;
+            var baseUnitExp = parseInt(document.getElementById('baseUnitExp').value, 10);
+
+            marketsContract.methods.getContractInfo().call()
+              .then(function(contractInfo){
+                console.log('contractInfo', contractInfo);
+                if (! contractInfo){
+                  throw new Error('Error reading contract info/version! Maybe contract address is invalid?');
+                }
+                if (contractInfo.contractType !== digioptionsContracts.constants.contractType.CONTRACT_DIGIOPTIONSMARKETS){
+                  throw new Error('Invalid contract type');
+                }
+
+                return marketsContract.methods.calcTypeDuration(expirationDatetime).call();
+              })
+              .then(function(typeDuration) {
+                console.log('typeDuration:', typeDuration);
+
+                marketBaseData = {
+                  baseUnitExp: baseUnitExp,
+                  underlying: factsigner.stringToHex(document.getElementById('name').value),
+                  ndigit: parseInt(document.getElementById('ndigit').value, 10),
+                  objectionPeriod: parseInt(document.getElementById('objectionPeriod').value, 10),
+                  expirationDatetime: expirationDatetime,
+                  strikes: document.getElementById('strikes').value.split(',').map(
+                    function(floatStr){
+                      floatStr.replace(/^\s+|\s+$/g, ''); // strip whitespace
+                      return factsigner.parseFloatToBn(floatStr, baseUnitExp).toString();
+                    }
+                  ),
+                  typeDuration: typeDuration,
+                  signerAddr: accountSign.address,
+                  feeTaker0: document.getElementById('feeTaker0').value,
+                  feeTaker1: document.getElementById('feeTaker1').value,
+                  transactionFee0: factsigner.parseFloatToBn(document.getElementById('transactionFeePercent0').value, 16).toString(), // input in percent (float)
+                  transactionFee1: factsigner.parseFloatToBn(document.getElementById('transactionFeePercent1').value, 16).toString() // input in percent (float)
+                };
+                console.log('marketBaseData:', marketBaseData);
+
+                return web3js.eth.getAccounts();
+              })
+              .then(function(accounts) {
+                console.log('from (account): ', accounts[0]);
+                if (! web3js.utils.isAddress(accounts[0])){
+                  throw new Error('No account! Maybe you need to unlock MetaMask?');
+                }
+
+                var factHash = factsigner.factHash(marketBaseData);
+                console.log('factHash:', factHash);
+                setInputFormByID('factHash', factHash);
+                var marketHash = digioptionsContracts.marketHash(marketBaseData);
+                console.log('marketHash:', marketHash);
+                setInputFormByID('marketHash', marketHash);
+                var signature = factsigner.sign(web3js, accountSign.privateKey, factHash);
+                console.log('signature:', signature);
+                var marketUrl = digioptionsTools.dataNetworksUtils.getDigioptionsUrl(
+                  'pageMarket',
+                  {network: network, contractAddr: contractAddr, marketHash: marketHash},
+                  false /* relative url */
+                );
+
+                return marketsContract.methods.createMarket(
+                  marketBaseData,
+                  false, /* testMarket */
+                  signature /* signature */
+                )
+                  .send({
+                    from: accounts[0]
+                    //gas: 3000000,
+                  })
+                  .on('transactionHash', function(/*transactionHash*/){
+                    modal_success('Create market transaction sent.\r\n\r\nIf the transaction succeeds you can view the market at:\r\n' + marketUrl);
+                  });
+              })
+              .then(function(){
+                console.log('transaction success');
+              })
+              .catch(function(err){
+                modal_error(err + '\r\n\r\nstack trace:\r\n' + err.stack);
+              });
+          } catch (err){
+            modal_error(err + '\r\n\r\nstack trace:\r\n' + err.stack);
+          }
+        };
+
+        document.getElementById('marketSettle').onclick = function(evt){
+          evt.preventDefault();
+          console.log('click create settle market');
+          try {
+            var accountSign = web3js.eth.accounts.privateKeyToAccount(document.getElementById('signingKey').value);
+            console.log('accountSign:', accountSign);
+            var marketsContract = new web3js.eth.Contract(
+              digioptionsContracts.digioptionsMarketsAbi(),
+              document.getElementById('contract').value
+            );
+            console.log('marketsContract addr:', document.getElementById('contract').value);
+
+
+            var marketHash = document.getElementById('marketHash').value;
+            var baseUnitExp;
+            console.log('marketHash:', marketHash);
+
+            marketsContract.methods.getContractInfo().call()
+              .then(function(contractInfo){
+                console.log('contractInfo', contractInfo);
+                if (! contractInfo){
+                  throw new Error('Error reading contract info/version! Maybe contract address is invalid?');
+                }
+                if (contractInfo.contractType !== digioptionsContracts.constants.contractType.CONTRACT_DIGIOPTIONSMARKETS){
+                  throw new Error('Invalid contract type');
+                }
+
+                return marketsContract.methods.getMarketData(marketHash).call();
+              })
+              .then(function(marketData){
+                console.log('marketData', marketData);
+                console.log('baseUnitExp', parseInt(marketData.marketBaseData.baseUnitExp));
+                baseUnitExp = parseInt(marketData.marketBaseData.baseUnitExp);
+
+                if (Number(marketData.marketBaseData.expirationDatetime) === 0){
+                  throw new Error('Market does not exists!');
+                }
+
+                return web3js.eth.getAccounts();
+              })
+              .then(function(accounts) {
+                console.log('from (account): ', accounts[0]);
+                if (! web3js.utils.isAddress(accounts[0])){
+                  throw new Error('No account! Maybe you need to unlock MetaMask?');
+                }
+
+                var valueBn = factsigner.parseFloatToBn(document.getElementById('quote').value, baseUnitExp);
+
+                var hash = factsigner.settlementHash(
+                  document.getElementById('factHash').value,
+                  valueBn,
+                  factsigner.SETTLEMENT_TYPE_FINAL
+                );
+                var signature_market_expire = factsigner.sign(web3js, accountSign.privateKey, hash);
+                console.log('signature_market_expire:', signature_market_expire);
+
+                return marketsContract.methods.settlement(
+                  marketHash,
+                  signature_market_expire,
+                  valueBn.toString(),
+                  10 // just do payout for 10 user only // TODO
+                )
+                  .send({
+                    from: accounts[0]
+                    //gas: 3000000,
+                  })
+                  .on('transactionHash', function(/*transactionHash*/){
+                    console.log('settlement transaction sent');
+                    modal_success('settlement transaction sent');
+                  });
+              })
+              .then(function(){
+                console.log('transaction success');
+              })
+              .catch(function(err){
+                modal_error(err);
+              });
+          } catch (err){
+            modal_error(err + '\r\n\r\nstack trace:\r\n' + err.stack);
+          }
+        };
+
+        // enable buttons (e.g. "create signing key" / "create new market")
+        document.getElementById('createSigningKey').disabled = false;
+        document.getElementById('marketNew').disabled = false;
+        document.getElementById('marketSettle').disabled = false;
+
+      })
+      .catch(function(err){
+        modal_error(err + '\r\n\r\nstack trace:\r\n' + err.stack);
+      });
+
+  }
+);
+
+    </script>
+</body>
+</html>

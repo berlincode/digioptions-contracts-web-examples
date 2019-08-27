@@ -1,0 +1,49 @@
+{
+  "name": "digioptions-contracts-web-examples",
+  "version": "0.6.0",
+  "description": "examples to create and settle markets for digioptions.com",
+  "homepage": "https://github.com/berlincode/digioptions-contracts-web-examples",
+  "license": "MIT",
+  "author": {
+    "name": "Ulf Bartel",
+    "email": "elastic.code@gmail.com"
+  },
+  "scripts": {
+    "serve": "http-server . -a 127.0.0.1 -p 8010 -c-1",
+    "eslint": "eslint ./*.html",
+    "postinstall": "patch-package"
+  },
+  "files": [
+    "assets/",
+    "*.html",
+    "patches/*.patch",
+    "LICENSE",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/berlincode/digioptions-contracts-web-examples"
+  },
+  "keywords": [
+    "option markets",
+    "user-driven",
+    "smart contract",
+    "ethereum"
+  ],
+  "dependencies": {
+    "bootstrap": "^3.4.1",
+    "digioptions-contracts.js": "git+https://github.com/berlincode/digioptions-contracts.js.git",
+    "digioptions-tools.js": "git+https://github.com/berlincode/digioptions-tools.js.git",
+    "factsigner": "git+https://github.com/berlincode/factsigner.git",
+    "jquery": "^3.3.1",
+    "patch-package": "6.1.2",
+    "requirejs": "2.3.6",
+    "web3": "2.0.0-alpha"
+  },
+  "devDependencies": {
+    "eslint": "^6.1.0",
+    "eslint-plugin-html": "^6.0.0",
+    "eslint-plugin-ie11": "^1.0.0",
+    "http-server": "^0.11.1"
+  }
+}
