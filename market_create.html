@@ -1,9 +1,8 @@
 <!DOCTYPE html>
-<html class="" lang="en">
+<html lang="en">
 <head>
-    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <meta charset="UTF-8">
-    <title>Markets create and settlement example</title>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <title>Markets creation and settlement example</title>
 
     <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css" />
 
@@ -21,7 +20,7 @@
     </style>
 </head>
 <body>
-    <h1>Markets create and settlement example</h1>
+    <h1>Markets creation and settlement example</h1>
 
     <div id="modal" class="modal fade" style="display: none">
       <div class="modal-dialog">
@@ -42,7 +41,7 @@
     </div>
 
     <p>
-        This is an example how to create markets.
+        This is an example of how to create markets.
     </p>
     <p>
         This online example is part of <a href="https://github.com/berlincode/digioptions-contracts-web-examples">https://github.com/berlincode/digioptions-contracts-web-examples</a>
@@ -68,9 +67,9 @@
         </div>
 
         <div class="form-group">
-          <label class="col-sm-3 control-label" for="contract">contract:</label>
+          <label class="col-sm-3 control-label" for="marketsAddr">markets contract (address):</label>
           <div class="input-group col-sm-9">
-            <input class="form-control " type="text" id="contract" name="contract" placeholder="" value="" />
+            <input class="form-control " type="text" id="marketsAddr" name="marketsAddr" placeholder="0x..." value="" />
             <div class="input-group-btn">
                 <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Default contracts <span class="caret"></span></button>
                 <ul class="dropdown-menu pull-right" id=dropdownContractList>
@@ -80,8 +79,8 @@
         </div>
 
         <p>
-            The (private) signing key is used create and settle a market. For market settling use same private signing key that was
-            used to create the market. Keep it save!
+            The (private) signing key is used to create and settle a market. For market settling use the same private signing key that was
+            used to create the market. Keep it safe!
         </p>
       </form>
     </div>
@@ -182,7 +181,7 @@ setInputFormByID('expirationdatetime', date.toUTCString());
 
 var parameters = (function(){
   // parse browser's hash/query-string append parameters and try to fill out form input values (intended for testing)
-  // e.g. .../market_create.html#?contract=0x0Eb7e02ED6C8a55f72551E8677eE3bbB25263016&signingKey=0x728c08b6404f3da74525183e0cf444483352e8f13a48ee40ece9185306ec7419
+  // e.g. .../market_create.html#?marketsAddr=0x0Eb7e02ED6C8a55f72551E8677eE3bbB25263016&signingKey=0x728c08b6404f3da74525183e0cf444483352e8f13a48ee40ece9185306ec7419
   var query = window.location.hash.replace(/^#?\??/, '');
   var vars = query.split('&');
   var params = [];
@@ -248,22 +247,28 @@ require(
   function(Web3, factsigner, digioptionsContracts, digioptionsTools){
     var dataNetworks = digioptionsTools.dataNetworks;
 
-    if(typeof window.web3 === 'undefined') {
-      modal_error('no web3 provider (i.e. metamask) found!');
+    if (! window.ethereum){
+      modal_error('No web3 provider (i.e. metamask) found!');
       return;
     }
 
-    /* use MetaMask et al only with public networks */
     console.log('Found web3 instance.');
 
-    var web3js = new Web3(window.web3.currentProvider);
-    web3js.eth.net.getNetworkType()
+    window.ethereum.autoRefreshOnNetworkChange = false;
+    window.ethereum.on('networkChanged', function () {
+      location.reload();
+    });
+
+    var web3 = new Web3(window.ethereum);
+    window.ethereum.enable()
+      .then(function(){
+        return web3.eth.net.getNetworkType();
+      })
       .then(function(network){
-        setInputFormByID('network', network);
-
         var dataNetwork = dataNetworks[network];
-        //var validNetworks = Object.keys(dataNetworks).filter(function(name){return dataNetworks[name].contractDescriptions.length != 0;});
+        setInputFormByID('network', network + (dataNetwork && dataNetwork.testnet ? ' (testnet)' : ''));
 
+        //var validNetworks = Object.keys(dataNetworks).filter(function(name){return dataNetworks[name].contractDescriptions.length != 0;});
 
         if ((! dataNetwork) || (! dataNetwork.contractDescriptions)){
           var header = document.createElement('li');
@@ -275,7 +280,7 @@ require(
           var contracts = {};
           for (var contractDescriptionIdx in dataNetwork.contractDescriptions){
             var addr = dataNetwork.contractDescriptions[contractDescriptionIdx].addr;
-            var contract = new web3js.eth.Contract(
+            var contract = new web3.eth.Contract(
               digioptionsContracts.digioptionsMarketsAbi(),
               addr
             );
@@ -290,7 +295,7 @@ require(
                   anchor.setAttribute('href', '#');
                   anchor.onclick = function(evt){
                     evt.preventDefault();
-                    setInputFormByID('contract', marketsAddr);
+                    setInputFormByID('marketsAddr', marketsAddr);
                   };
                   anchor.textContent = marketsAddr;
 
@@ -302,31 +307,32 @@ require(
               .catch(function(/*err*/){
                 /* ignore error */
               });
-        
+
           }
         }
 
         document.getElementById('createSigningKey').onclick = function(evt){
           evt.preventDefault();
-          setInputFormByID('signingKey', web3js.eth.accounts.create().privateKey);
+          setInputFormByID('signingKey', web3.eth.accounts.create().privateKey);
         };
 
         document.getElementById('marketNew').onclick = function(evt){
           evt.preventDefault();
           console.log('click create new market');
           try {
-            var accountSign = web3js.eth.accounts.privateKeyToAccount(document.getElementById('signingKey').value);
+            var accountSign = web3.eth.accounts.privateKeyToAccount(document.getElementById('signingKey').value);
             console.log('accountSign:', accountSign);
-            var contractAddr = document.getElementById('contract').value;
-            console.log('contractAddr:', contractAddr);
 
-            if (! web3js.utils.isAddress(contractAddr)){
-              throw new Error('Invalid address "' + contractAddr + '" !');
+            var marketsAddr = document.getElementById('marketsAddr').value;
+            console.log('marketsAddr:', marketsAddr);
+
+            if (! web3.utils.isAddress(marketsAddr)){
+              throw new Error('Invalid markets address "' + marketsAddr + '" !');
             }
 
-            var marketsContract = new web3js.eth.Contract(
+            var marketsContract = new web3.eth.Contract(
               digioptionsContracts.digioptionsMarketsAbi(),
-              contractAddr
+              marketsAddr
             );
 
             var expirationDatetime = (new Date(document.getElementById('expirationdatetime').value)).getTime()/1000;
@@ -371,11 +377,11 @@ require(
                 };
                 console.log('marketBaseData:', marketBaseData);
 
-                return web3js.eth.getAccounts();
+                return web3.eth.getAccounts();
               })
               .then(function(accounts) {
                 console.log('from (account): ', accounts[0]);
-                if (! web3js.utils.isAddress(accounts[0])){
+                if (! web3.utils.isAddress(accounts[0])){
                   throw new Error('No account! Maybe you need to unlock MetaMask?');
                 }
 
@@ -385,11 +391,11 @@ require(
                 var marketHash = digioptionsContracts.marketHash(marketBaseData);
                 console.log('marketHash:', marketHash);
                 setInputFormByID('marketHash', marketHash);
-                var signature = factsigner.sign(web3js, accountSign.privateKey, factHash);
+                var signature = factsigner.sign(web3, accountSign.privateKey, factHash);
                 console.log('signature:', signature);
                 var marketUrl = digioptionsTools.dataNetworksUtils.getDigioptionsUrl(
                   'pageMarket',
-                  {network: network, contractAddr: contractAddr, marketHash: marketHash},
+                  {network: network, contractAddr: marketsAddr, marketHash: marketHash},
                   false /* relative url */
                 );
 
@@ -421,14 +427,20 @@ require(
           evt.preventDefault();
           console.log('click create settle market');
           try {
-            var accountSign = web3js.eth.accounts.privateKeyToAccount(document.getElementById('signingKey').value);
+            var accountSign = web3.eth.accounts.privateKeyToAccount(document.getElementById('signingKey').value);
             console.log('accountSign:', accountSign);
-            var marketsContract = new web3js.eth.Contract(
-              digioptionsContracts.digioptionsMarketsAbi(),
-              document.getElementById('contract').value
-            );
-            console.log('marketsContract addr:', document.getElementById('contract').value);
 
+            var marketsAddr = document.getElementById('marketsAddr').value;
+            console.log('marketsAddr:', marketsAddr);
+
+            if (! web3.utils.isAddress(marketsAddr)){
+              throw new Error('Invalid markets address "' + marketsAddr + '" !');
+            }
+
+            var marketsContract = new web3.eth.Contract(
+              digioptionsContracts.digioptionsMarketsAbi(),
+              marketsAddr
+            );
 
             var marketHash = document.getElementById('marketHash').value;
             var baseUnitExp;
@@ -455,11 +467,11 @@ require(
                   throw new Error('Market does not exists!');
                 }
 
-                return web3js.eth.getAccounts();
+                return web3.eth.getAccounts();
               })
               .then(function(accounts) {
                 console.log('from (account): ', accounts[0]);
-                if (! web3js.utils.isAddress(accounts[0])){
+                if (! web3.utils.isAddress(accounts[0])){
                   throw new Error('No account! Maybe you need to unlock MetaMask?');
                 }
 
@@ -470,7 +482,7 @@ require(
                   valueBn,
                   factsigner.SETTLEMENT_TYPE_FINAL
                 );
-                var signature_market_expire = factsigner.sign(web3js, accountSign.privateKey, hash);
+                var signature_market_expire = factsigner.sign(web3, accountSign.privateKey, hash);
                 console.log('signature_market_expire:', signature_market_expire);
 
                 return marketsContract.methods.settlement(
