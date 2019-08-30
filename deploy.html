@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <title>Deploy contracts example</title>
+
+    <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css" />
+
+    <script type="text/javascript" src="node_modules/requirejs/require.js"></script>
+    <script type="text/javascript" src="node_modules/jquery/dist/jquery.min.js"></script>
+    <script type="text/javascript" src="node_modules/bootstrap/dist/js/bootstrap.min.js" ></script>
+
+    <style>
+.col-sm-6 {
+    width: 50% !important;
+}
+.col-sm-9 {
+    width: 75% !important;
+}
+    </style>
+</head>
+<body>
+    <h1>Deploy contracts</h1>
+
+    <div id="modal" class="modal fade" style="display: none">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header" id="modalheader">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title" id="modaltitle">Modal title</h4>
+          </div>
+          <div class="modal-body">
+            <pre id="modalbody">
+            </pre>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Ok</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p>
+        Using this page you can deploy digioptions contracts to the blockchain.
+    </p>
+    <p>
+        This online example is part of <a href="https://github.com/berlincode/digioptions-contracts-web-examples">https://github.com/berlincode/digioptions-contracts-web-examples</a>
+    </p>
+
+    <div class="container">
+      <form class="form-horizontal">
+
+        <div class="form-group row">
+          <label class="col-sm-3 control-label" for="network">network:</label>
+          <input class="form-control col-sm-9" type="text" id="network" name="name" placeholder="" value="" disabled />
+        </div>
+
+        <div class="form-group">
+          <label class="col-sm-3 control-label" for="contract">contract:</label>
+
+	    <select id="contract" class="col-sm-9 form-control">
+	    </select>
+	</div>
+
+        <div class="form-group" style="display: none" id="from-group-marketsAddr">
+          <label class="col-sm-3 control-label" for="marketsAddr">markets contract (address):</label>
+          <div class="input-group col-sm-9">
+            <input class="form-control " type="text" id="marketsAddr" name="marketsAddr" placeholder="0x..." value="" />
+            <div class="input-group-btn">
+                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Default contracts <span class="caret"></span></button>
+                <ul class="dropdown-menu pull-right" id=dropdownContractList>
+                </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="col-sm-offset-3 col-sm-9" style="padding-left: 0;">
+            <button type="submit" class="btn btn-primary" id="deploy" name="deploy" value="1" disabled>deploy contract</button>
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+    <script>
+
+var setInputFormByID = function(id, value){
+  var elm = document.getElementById(id);
+  if (elm){
+    elm.value = value;
+  }
+};
+
+require.config({
+  paths: {
+    'web3': 'assets/js/web3.min'
+  },
+  packages: [
+    {
+      name: 'factsigner',
+      location: 'node_modules/factsigner',
+      main: 'js/index.js'
+    },
+    {
+      name: 'digioptions-tools.js',
+      location: 'node_modules/digioptions-tools.js',
+      main: 'js/index.js'
+    },
+    {
+      name: 'digioptions-contracts.js',
+      location: 'node_modules/digioptions-contracts.js',
+      main: 'js/index.js'
+    },
+    {
+      name: 'strophe.js',
+      location: 'node_modules/strophe.js',
+      main: 'strophe.js'
+    }
+  ]
+});
+
+/* show an error to the user */
+var modal_error = function(str){
+  $('#modal').modal();
+  document.getElementById('modaltitle').textContent = 'Error';
+  document.getElementById('modalbody').textContent = str;
+  document.getElementById('modalheader').setAttribute('style', 'background-color: #d9534f; border-top-left-radius: 5px; border-top-right-radius: 5px;');
+};
+
+var modal_success = function(str){
+  $('#modal').modal();
+  document.getElementById('modaltitle').textContent = 'Success';
+  document.getElementById('modalbody').textContent = str;
+  document.getElementById('modalheader').setAttribute('style', 'background-color: #0480be; border-top-left-radius: 5px; border-top-right-radius: 5px;');
+};
+require(
+  [
+    'web3',
+    'factsigner',
+    'digioptions-contracts.js',
+    'digioptions-contracts.js/js/digioptions_markets_bin',
+    'digioptions-contracts.js/js/digioptions_market_lister_bin',
+    'digioptions-contracts.js/js/digioptions_meta_bin',
+    'digioptions-tools.js'
+  ],
+  function(Web3, factsigner, digioptionsContracts, digioptionsMarketsBin, digioptionsMarketListerBin, digioptionsMetaBin, digioptionsTools){
+    var dataNetworks = digioptionsTools.dataNetworks;
+
+    if (! window.ethereum){
+      modal_error('No web3 provider (i.e. metamask) found!');
+      return;
+    }
+
+    console.log('Found web3 instance.');
+
+    var contractDefs = {
+      'markets': {
+        version: digioptionsContracts.versionMarkets,
+        abi: digioptionsContracts.digioptionsMarketsAbi(),
+        bin: digioptionsMarketsBin()
+      },
+      'marketLister': {
+        version: digioptionsContracts.versionMarketLister,
+        bin: digioptionsMarketListerBin(),
+        abi: digioptionsContracts.digioptionsMarketListerAbi(),
+      }
+      /*,
+      'meta': { // TODO
+        version: digioptionsContracts.versionMeta,
+        bin: digioptionsMetaBin(),
+        abi:
+        }
+      */
+    };
+
+    /* add contracts to select */
+    for (var contractName in contractDefs){
+      var contractVersionString = digioptionsContracts.versionToString(contractDefs[contractName].version);
+
+      var option = document.createElement('option');
+      option.setAttribute('value', contractName);
+      option.textContent = contractName + ' (version: ' + contractVersionString + ')';
+
+      document.getElementById('contract').appendChild(option);
+    }
+
+    document.getElementById('contract').onchange = function(/*evt*/){
+      var contractName = document.getElementById('contract').value;
+      if (contractName === 'marketLister'){
+        document.getElementById('from-group-marketsAddr').setAttribute('style', 'display: block;');
+      } else {
+        document.getElementById('from-group-marketsAddr').setAttribute('style', 'display: none;');
+      }
+    };
+
+    window.ethereum.autoRefreshOnNetworkChange = false;
+    window.ethereum.on('networkChanged', function () {
+      location.reload();
+    });
+
+    var web3 = new Web3(window.ethereum);
+    window.ethereum.enable()
+      .then(function(){
+        return web3.eth.net.getNetworkType();
+      })
+      .then(function(network){
+        var dataNetwork = dataNetworks[network];
+        setInputFormByID('network', network + (dataNetwork && dataNetwork.testnet ? ' (testnet)' : ''));
+
+        if ((! dataNetwork) || (! dataNetwork.contractDescriptions)){
+          var header = document.createElement('li');
+          header.setAttribute('class', 'dropdown-header');
+          header.textContent = 'No default contracts for network "' + network + '" known';
+          document.getElementById('dropdownContractList').appendChild(header);
+        } else {
+
+          var contracts = {};
+          for (var contractDescriptionIdx in dataNetwork.contractDescriptions){
+            var addr = dataNetwork.contractDescriptions[contractDescriptionIdx].addr;
+            var contract = new web3.eth.Contract(
+              digioptionsContracts.digioptionsMarketsAbi(),
+              addr
+            );
+
+            contract.methods.getContractInfo().call()
+              .then(function(contractInfo){
+                var marketsAddr = contractInfo && contractInfo.digiOptionsMarketsAddr;
+                if (marketsAddr && (!contracts[marketsAddr])){
+                  contracts[contractInfo.digiOptionsMarketsAddr] = true; // add each addr only once
+
+                  var anchor = document.createElement('a');
+                  anchor.setAttribute('href', '#');
+                  anchor.onclick = function(evt){
+                    evt.preventDefault();
+                    setInputFormByID('marketsAddr', marketsAddr);
+                  };
+                  anchor.textContent = marketsAddr;
+
+                  var elm = document.createElement('li');
+                  elm.appendChild(anchor);
+                  document.getElementById('dropdownContractList').appendChild(elm);
+                }
+              })
+              .catch(function(/*err*/){
+                /* ignore error */
+              });
+
+          }
+        }
+
+        document.getElementById('deploy').onclick = function(evt){
+          evt.preventDefault();
+          console.log('click deploy');
+          try {
+
+            var contractName = document.getElementById('contract').value;
+
+            var deployArguments = [];
+            if (contractName === 'marketLister') {
+              var marketsAddr = document.getElementById('marketsAddr').value;
+              console.log('marketsAddr:', marketsAddr);
+
+              if (! web3.utils.isAddress(marketsAddr)){
+                throw new Error('Invalid address marketsAddr "' + marketsAddr + '" !');
+              }
+              deployArguments = [marketsAddr];
+            }
+
+            var contractBin = contractDefs[contractName].bin;
+            var contractAbi = contractDefs[contractName].abi;
+            var contract = new web3.eth.Contract(contractAbi);
+
+            web3.eth.getAccounts()
+              .then(function(accounts) {
+                console.log('from (account): ', accounts[0]);
+                if (! web3.utils.isAddress(accounts[0])){
+                  throw new Error('No account! Maybe you need to unlock MetaMask?');
+                }
+
+                return contract.deploy({
+                  data: contractBin,
+                  arguments: deployArguments
+                })
+                  .send({
+                    gas: 4000000, // TODO
+                    from: accounts[0]
+                  })
+                  .on('transactionHash', function(/*transactionHash*/){
+                    modal_success('Transaction sent. Please stand by.');
+                  });
+              })
+              .then(function(contract){
+                modal_success('Your contract was deployed to address:\r\n' + contract.address);
+                console.log('transaction success');
+              })
+              .catch(function(err){
+                modal_error(err + '\r\n\r\nstack trace:\r\n' + err.stack);
+              });
+
+          } catch (err){
+            modal_error(err + '\r\n\r\nstack trace:\r\n' + err.stack);
+          }
+        };
+
+        // enable buttons
+        document.getElementById('deploy').disabled = false;
+
+      })
+      .catch(function(err){
+        modal_error(err + '\r\n\r\nstack trace:\r\n' + err.stack);
+      });
+
+  }
+);
+
+    </script>
+</body>
+</html>

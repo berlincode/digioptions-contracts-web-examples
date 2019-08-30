@@ -6,6 +6,7 @@ digioptions-contracts-web-examples
 This repository contains examples that helps interacting with the ethereum contract from
 [https://github.com/berlincode/digioptions-contracts.js](https://github.com/berlincode/digioptions-contracts.js).
 
+ * deploy.html - deploy contracts [click here for the online version](https://berlincode.github.io/digioptions-contracts-web-examples/deploy.html)
  * markets-create.html - create and settle markets [click here for the online version](https://berlincode.github.io/digioptions-contracts-web-examples/market_create.html)
 
 Of course you can download the repository and run the files locally. Remember that Metamask does not work on file://...-urls.
