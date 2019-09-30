@@ -6,17 +6,15 @@
 
     <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css" />
 
-    <script type="text/javascript" src="node_modules/requirejs/require.js"></script>
     <script type="text/javascript" src="node_modules/jquery/dist/jquery.min.js"></script>
+    <script type="text/javascript" src="node_modules/popper.js/dist/umd/popper.min.js"></script>
     <script type="text/javascript" src="node_modules/bootstrap/dist/js/bootstrap.min.js" ></script>
+    <script type="text/javascript" src="node_modules/requirejs/require.js"></script>
 
     <style>
-.col-sm-6 {
-    width: 50% !important;
-}
-.col-sm-9 {
-    width: 75% !important;
-}
+button:disabled {
+  cursor: not-allowed;
+}  
     </style>
 </head>
 <body>
@@ -51,31 +49,41 @@
       <form class="form-horizontal">
 
         <div class="form-group row">
-          <label class="col-sm-3 control-label" for="network">network:</label>
-          <input class="form-control col-sm-9" type="text" id="network" name="name" placeholder="" value="" disabled />
+          <label class="col-3 col-form-label" for="network">
+            network:
+          </label>
+          <div class="col">
+            <input class="form-control" type="text" id="network" name="name" placeholder="" value="" disabled />
+          </div>
         </div>
 
-        <div class="form-group">
-          <label class="col-sm-3 control-label" for="contract">contract:</label>
-
-	    <select id="contract" class="col-sm-9 form-control">
+        <div class="form-group row">
+          <label class="col-3 control-label" for="contract">contract:</label>
+          <div class="col">
+	    <select id="contract" class="col form-control">
 	    </select>
+	  </div>
 	</div>
 
-        <div class="form-group" style="display: none" id="from-group-marketsAddr">
-          <label class="col-sm-3 control-label" for="marketsAddr">markets contract (address):</label>
-          <div class="input-group col-sm-9">
-            <input class="form-control " type="text" id="marketsAddr" name="marketsAddr" placeholder="0x..." value="" />
-            <div class="input-group-btn">
-                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Default contracts <span class="caret"></span></button>
-                <ul class="dropdown-menu pull-right" id=dropdownContractList>
-                </ul>
+        <div class="form-group row" style="display: none" id="form-group-marketsAddr">
+          <div class="col-3">
+            <label class="col-form-label" for="marketsAddr">
+                markets contract (address):
+            </label>
+<!--            <a tabindex="0" style="padding-left: 3px; padding-right: 3px" class="text-white bg-secondary" role="button" data-toggle="popover" data-container="body" data-placement="top" data-trigger="focus" title="Dismissible popover" data-content="And here's some amazing content. It's very engaging. Right?">?</a>-->
+          </div>
+          <div class="input-group col">
+            <input class="form-control" type="text" id="marketsAddr" name="marketsAddr" placeholder="0x..." value="" />
+            <div class="input-group-append">
+              <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">default contracts <span class="caret"></span></button>
+              <div class="dropdown-menu dropdown-menu-right" id="dropdownContractList">
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="form-group">
-          <div class="col-sm-offset-3 col-sm-9" style="padding-left: 0;">
+        <div class="form-group row">
+          <div class="offset-3 col" style="">
             <button type="submit" class="btn btn-primary" id="deploy" name="deploy" value="1" disabled>deploy contract</button>
           </div>
         </div>
@@ -85,10 +93,22 @@
 
     <script>
 
-var setInputFormByID = function(id, value){
+// initialize all popover infos
+$('[data-toggle="popover"]').popover();
+
+var setInputFormByID = function(id, value, disable /* optional */){
   var elm = document.getElementById(id);
   if (elm){
     elm.value = value;
+    if (typeof(disable) !== 'undefined'){
+      if (disable) {
+        elm.setAttribute('disabled', true);
+      } else {
+        elm.removeAttribute('disabled');
+      }
+    }
+    // trigger all functions listeninf for 'input' event
+    elm.dispatchEvent(new Event('input', {}));
   }
 };
 
@@ -125,15 +145,16 @@ var modal_error = function(str){
   $('#modal').modal();
   document.getElementById('modaltitle').textContent = 'Error';
   document.getElementById('modalbody').textContent = str;
-  document.getElementById('modalheader').setAttribute('style', 'background-color: #d9534f; border-top-left-radius: 5px; border-top-right-radius: 5px;');
+  document.getElementById('modalheader').setAttribute('style', 'background-color: #d9534f; border-top-left-radius: 3px; border-top-right-radius: 3px;');
 };
 
 var modal_success = function(str){
   $('#modal').modal();
   document.getElementById('modaltitle').textContent = 'Success';
   document.getElementById('modalbody').textContent = str;
-  document.getElementById('modalheader').setAttribute('style', 'background-color: #0480be; border-top-left-radius: 5px; border-top-right-radius: 5px;');
+  document.getElementById('modalheader').setAttribute('style', 'background-color: #0480be; border-top-left-radius: 3px; border-top-right-radius: 3px;');
 };
+
 require(
   [
     'web3',
@@ -145,6 +166,9 @@ require(
     'digioptions-tools.js'
   ],
   function(Web3, factsigner, digioptionsContracts, digioptionsMarketsBin, digioptionsMarketListerBin, digioptionsMetaBin, digioptionsTools){
+
+    var web3 = new Web3(window.ethereum);
+
     var dataNetworks = digioptionsTools.dataNetworks;
 
     if (! window.ethereum){
@@ -188,9 +212,9 @@ require(
     document.getElementById('contract').onchange = function(/*evt*/){
       var contractName = document.getElementById('contract').value;
       if (contractName === 'marketLister'){
-        document.getElementById('from-group-marketsAddr').setAttribute('style', 'display: block;');
+        document.getElementById('form-group-marketsAddr').removeAttribute('style');
       } else {
-        document.getElementById('from-group-marketsAddr').setAttribute('style', 'display: none;');
+        document.getElementById('form-group-marketsAddr').setAttribute('style', 'display: none;');
       }
     };
 
@@ -199,7 +223,6 @@ require(
       location.reload();
     });
 
-    var web3 = new Web3(window.ethereum);
     window.ethereum.enable()
       .then(function(){
         return web3.eth.net.getNetworkType();
@@ -209,7 +232,7 @@ require(
         setInputFormByID('network', network + (dataNetwork && dataNetwork.testnet ? ' (testnet)' : ''));
 
         if ((! dataNetwork) || (! dataNetwork.contractDescriptions)){
-          var header = document.createElement('li');
+          var header = document.createElement('h6');
           header.setAttribute('class', 'dropdown-header');
           header.textContent = 'No default contracts for network "' + network + '" known';
           document.getElementById('dropdownContractList').appendChild(header);
@@ -236,10 +259,9 @@ require(
                     setInputFormByID('marketsAddr', marketsAddr);
                   };
                   anchor.textContent = marketsAddr;
+                  anchor.setAttribute('class', 'dropdown-item');
 
-                  var elm = document.createElement('li');
-                  elm.appendChild(anchor);
-                  document.getElementById('dropdownContractList').appendChild(elm);
+                  document.getElementById('dropdownContractList').appendChild(anchor);
                 }
               })
               .catch(function(/*err*/){
@@ -304,7 +326,7 @@ require(
         };
 
         // enable buttons
-        document.getElementById('deploy').disabled = false;
+        document.getElementById('deploy').removeAttribute('disabled');
 
       })
       .catch(function(err){

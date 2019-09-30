@@ -1,199 +1,531 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
     <title>Markets creation and settlement example</title>
 
     <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css" />
 
-    <script type="text/javascript" src="node_modules/requirejs/require.js"></script>
-    <script type="text/javascript" src="node_modules/jquery/dist/jquery.min.js"></script>
-    <script type="text/javascript" src="node_modules/bootstrap/dist/js/bootstrap.min.js" ></script>
-
     <style>
-.col-sm-6 {
-    width: 50% !important;
-}
-.col-sm-9 {
-    width: 75% !important;
+button:disabled {
+  cursor: not-allowed;
+}  
+.col-3-sub {
+    -ms-flex: 0 0 30%;
+    flex: 0 0 30%;
+    max-width: 30%;
 }
     </style>
-</head>
-<body>
-    <h1>Markets creation and settlement example</h1>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Markets creation and settlement example</h1>
 
-    <div id="modal" class="modal fade" style="display: none">
-      <div class="modal-dialog">
-        <div class="modal-content">
+      <div id="modal" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
           <div class="modal-header" id="modalheader">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-            <h4 class="modal-title" id="modaltitle">Modal title</h4>
+            <h5 class="modal-title" id="modaltitle">Modal title</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
           </div>
           <div class="modal-body">
             <pre id="modalbody">
             </pre>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-default" data-dismiss="modal">Ok</button>
+            <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+          </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <p>
-        This is an example of how to create markets.
-    </p>
-    <p>
+      <p>
+        Both market creation and market settlement is a 2 stage processs. You need
+      </p>
+      <ol>
+        <li>
+          a trusted signature over the "facts" (and the final quote on settlement)
+        </li>
+        <li>
+          someone who will create the market on the blockchain.
+        </li>
+      </ol>
+
+      <p>
+        With this tool you can do both.
+      </p>
+      <p>
         This online example is part of <a href="https://github.com/berlincode/digioptions-contracts-web-examples">https://github.com/berlincode/digioptions-contracts-web-examples</a>
-    </p>
+      </p>
 
-    <hr/>
-    <h2>Base data</h2>
-    <div class="container">
+      <h2>Base data</h2>
+
       <form class="form-horizontal">
 
         <div class="form-group row">
-          <label class="col-sm-3 control-label" for="network">network:</label>
-          <input class="form-control col-sm-9" type="text" id="network" name="name" placeholder="" value="" disabled />
+          <label class="col-3 col-form-label" for="network">
+  <!--          <span class="badge badge-primary">1</span>-->
+            network:
+          </label>
+          <div class="col">
+            <input class="form-control" type="text" id="network" name="network" placeholder="" value="" disabled />
+          </div>
         </div>
-        <div class="form-group">
-          <label class="col-sm-3 control-label" for="signingKey">signing key:</label>
-          <div class="input-group col-sm-9">
-            <input class="form-control" type="text" id="signingKey" name="signingKey" placeholder="" value="" />
-            <div class="input-group-btn">
-              <button type="button" class="btn btn-default" id="createSigningKey" name="createSigningKey" value="1" disabled>create signing key</button>
+
+        <div class="form-group row">
+          <div class="col-3">
+            <label class="col-form-label" for="contractAddr">
+  <!--              <span class="badge badge-primary">3</span>-->
+                contractAddr (contract address):
+            </label>
+  <!--          <a tabindex="0" style="padding-left: 3px; padding-right: 3px" class="text-white bg-secondary" role="button" data-toggle="popover" data-container="body" data-placement="top" data-trigger="focus" title="Dismissible popover" data-content="And here's some amazing content. It's very engaging. Right?">?</a>-->
+          </div>
+          <div class="input-group col">
+            <input class="form-control" type="text" id="contractAddr" name="contractAddr" placeholder="0x..." value="" />
+            <div class="input-group-append">
+              <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">default contracts <span class="caret"></span></button>
+              <div class="dropdown-menu dropdown-menu-right" id="dropdownContractList">
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="form-group">
-          <label class="col-sm-3 control-label" for="marketsAddr">markets contract (address):</label>
-          <div class="input-group col-sm-9">
-            <input class="form-control " type="text" id="marketsAddr" name="marketsAddr" placeholder="0x..." value="" />
-            <div class="input-group-btn">
-                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Default contracts <span class="caret"></span></button>
-                <ul class="dropdown-menu pull-right" id=dropdownContractList>
-                </ul>
+
+        <div class="form-group row">
+          <label class="col-3 col-form-label" for="signerPrivateKey">
+  <!--          <span class="badge badge-primary">2</span>-->
+            signerPrivateKey (private!):
+          </label>
+          <div class="input-group col">
+            <input class="form-control" type="text" id="signerPrivateKey" name="signerPrivateKey" placeholder="" value="" />
+            <div class="input-group-append">
+              <button type="button" class="btn btn-outline-secondary" id="createSigningKey" name="createSigningKey" value="1" disabled>create private key</button>
             </div>
+          </div>
+        </div>
+
+        <div class="form-group row">
+          <div class="offset-1 col-3">
+            <label class="col-form-label" style="margin: 0; padding: 0;" for="signerAddr">
+  <!--          <span class="badge badge-primary">2</span>-->
+              -&gt; signerAddr:
+            </label>
+            <div class="text-muted small" style="padding-left: 1em;">
+              (calc. from signerPrivateKey)
+            </div>
+          </div>
+          <div class="input-group col">
+            <input class="form-control" type="text" id="signerAddr" name="signerAddr" placeholder="" value="" disabled/>
           </div>
         </div>
 
         <p>
-            The (private) signing key is used to create and settle a market. For market settling use the same private signing key that was
-            used to create the market. Keep it safe!
+          The private signing key ('signerPrivateKey') is used to calculate the required signatures for market creation and settlement. For market settling use the same private signing key that was
+          used to create the market. Keep it safe!
         </p>
       </form>
-    </div>
 
-    <hr/>
-    <h2>Market create</h2>
-    <div class="container">
-      <form class="form-horizontal">
+      <ul class="nav nav-tabs" role="tablist">
+        <li class="nav-item">
+          <a class="nav-link" id="marketCreate-tab" data-toggle="tab" href="#marketCreate" role="tab" aria-controls="marketCreate" aria-selected="true">
+            Market creation
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="marketSettle-tab" data-toggle="tab" href="#marketSettle" role="tab" aria-controls="marketSettle" aria-selected="false">
+            Market settlement
+          </a>
+        </li>
+      </ul>
 
-        <div class="form-group">
-          <label class="col-sm-3 control-label" for="name">name:</label>
-          <input class="form-control col-sm-9" type="text" id="name" name="name" placeholder="ETH/USD" value="Test-Coin" />
-        </div>
-        <div class="form-group">
-          <label class="col-sm-3 control-label" for="strikes">strikes:</label>
-          <input class="form-control col-sm-9" type="text" id="strikes" name="strikes" placeholder="10.0, 11.0" value="996.0, 1000.0, 1004.0, 1008.0" />
-        </div>
-        <div class="form-group">
-          <label class="col-sm-3 control-label" for="expirationdatetime">expirationDatetime:</label>
-          <input class="form-control col-sm-9" type="text" id="expirationdatetime" name="expirationdatetime" value="" />
-        </div>
-        <div class="form-group">
-          <label class="col-sm-3 control-label" for="ndigit">ndigit:</label>
-          <input class="form-control col-sm-9" type="text" id="ndigit" name="ndigit" value="2" />
-        </div>
-        <div class="form-group">
-          <label class="col-sm-3 control-label" for="baseUnitExp">baseUnitExp:</label>
-          <input class="form-control col-sm-9" type="text" id="baseUnitExp" name="baseUnitExp" value="18" />
-        </div>
-        <div class="form-group">
-          <label class="col-sm-3 control-label" for="objectionPeriod">objectionPeriod:</label>
-          <input class="form-control col-sm-9" type="text" id="objectionPeriod" name="objectionPeriod" value="3600" />
-        </div>
-        <div class="form-group">
-          <label class="col-sm-3 control-label" for="transactionFeePercent0">transactionFee0: (in percent)</label>
-          <input class="form-control col-sm-9" type="text" id="transactionFeePercent0" name="transactionFeePercent0" value="0.0" />
-        </div>
-        <div class="form-group">
-          <label class="col-sm-3 control-label" for="transactionFeePercent1">transactionFee1: (in percent)</label>
-          <input class="form-control col-sm-9" type="text" id="transactionFeePercent1" name="transactionFeePercent1" value="0.0" />
-        </div>
-        <div class="form-group">
-          <label class="col-sm-3 control-label" for="feeTaker0">fee taker 0: (address)</label>
-          <input class="form-control col-sm-9" type="text" id="feeTaker0" name="feeTaker0" value="0x0000000000000000000000000000000000000000" />
-        </div>
-        <div class="form-group">
-          <label class="col-sm-3 control-label" for="feeTaker1">fee taker 1: (address)</label>
-          <input class="form-control col-sm-9" type="text" id="feeTaker1" name="feeTaker1" value="0x0000000000000000000000000000000000000000" />
-        </div>
-        <div class="form-group">
-          <div class="col-sm-offset-3 col-sm-9" style="padding-left: 0;">
-            <button type="submit" class="btn btn-primary" id="marketNew" name="marketNew" value="1" disabled>create new market</button>
-          </div>
-        </div>
-      </form>
-    </div>
+      <div class="tab-content">
 
-    <hr/>
-    <h2>Market settle</h2>
-    <div class="container">
-      <form class="form-horizontal">
+        <div class="tab-pane fade" id="marketCreate" role="tabpanel" aria-labelledby="marketCreate-tab">
 
-        <div class="form-group">
-          <label class="col-sm-3 control-label" for="factHash">factHash</label>
-          <input class="form-control col-sm-9" type="text" id="factHash" name="factHash" value="" placeholder="0x000..." />
+          <h2>Market creation</h2>
+
+          <form class="form-horizontal">
+
+            <div class="form-group row">
+              <label class="col-3 col-form-label" for="underlyingString">
+                <span class="badge badge-primary">1</span>
+                underlyingString:
+              </label>
+              <div class="col">
+                <input class="form-control" type="text" id="underlyingString" name="underlyingString" placeholder="ETH/USD" value="Test-Coin" />
+              </div>
+            </div>
+            <div class="form-group row">
+              <label class="col-3 col-form-label" for="expirationDatetime">
+                <span class="badge badge-primary">2</span>
+                expirationDatetime:
+              </label>
+              <div class="col">
+                <input class="form-control" type="text" id="expirationDatetime" name="expirationDatetime" value="" />
+              </div>
+            </div>
+            <div class="form-group row">
+              <label class="col-3 col-form-label" for="ndigit">
+                <span class="badge badge-primary">3</span>
+                ndigit:
+              </label>
+              <div class="col">
+                <input class="form-control" type="text" id="ndigit" name="ndigit" value="2" />
+              </div>
+            </div>
+            <div class="form-group row">
+              <label class="col-3 col-form-label" for="baseUnitExp">
+                <span class="badge badge-primary">4</span>
+                baseUnitExp:
+              </label>
+              <div class="col">
+                <input class="form-control" type="text" id="baseUnitExp" name="baseUnitExp" value="18" />
+              </div>
+            </div>
+            <div class="form-group row">
+              <label class="col-3 col-form-label" for="objectionPeriod">
+                <span class="badge badge-primary">5</span>
+                objectionPeriod:
+              </label>
+              <div class="col">
+                <input class="form-control" type="text" id="objectionPeriod" name="objectionPeriod" value="3600" />
+              </div>
+            </div>
+
+            <div class="form-group row">
+              <div class="offset-1 col-3">
+                <label class="col-form-label" style="margin: 0; padding: 0;" for="factHash">
+                  -&gt; factHash:
+                </label>
+                <div class="text-muted small" style="padding-left: 1em;">
+                  (calc. over <span class="badge badge-secondary">1</span>&#32;-&#32;<span class="badge badge-secondary">5</span>)
+                </div>
+              </div>
+              <div class="col">
+                <input class="form-control" type="text" id="factHash" name="factHash" value="" disabled />
+              </div>
+            </div>
+
+            <div class="form-group row">
+              <div class="col-3">
+                <label class="col-form-label" style="margin: 0; padding: 0;" for="signatureFactHash">
+  <!--      <span class="badge badge-primary">1</span>-->
+                  signatureFactHash:<br/>
+                </label><br/>
+                <div class="text-muted small" style="padding-left: 1em;">
+                  factHash (based on <span class="badge badge-secondary">1</span>&#32;-&#32;<span class="badge badge-secondary">5</span>)
+                  signed with signerPrivateKey
+                </div>
+              </div>
+              <div class="col">
+                <textarea class="form-control" style="font-size: 80%;" id="signatureFactHash" name="signatureFactHash" rows="5"></textarea>
+              </div>
+              <div class="col-2">
+                <button class="btn btn-secondary" id="signatureFactHashCalc" name="signatureFactHashCalc" value="1" disabled>calc. signatureFactHash</button>
+              </div>
+            </div>
+
+            <div class="form-group row">
+              <label class="col-3 col-form-label" for="strikes">
+                <span class="badge badge-primary">6</span>
+                typeDuration:
+              </label>
+              <div class="input-group col">
+                <select class="form-control" id="typeDuration" name="typeDuration">
+                    <option value="" selected> -- no selection -- </option>
+                </select>
+                <div class="input-group-append">
+                  <button type="button" class="btn btn-outline-secondary" id="calcTypeDuration" name="calcTypeDuration" value="1" disabled>calc typeDuration</button>
+                </div>
+              </div>
+            </div>
+            <div class="form-group row">
+              <label class="col-3 col-form-label" for="strikes">
+                <span class="badge badge-primary">7</span>
+                strikes:
+              </label>
+              <div class="col">
+                <input class="form-control" type="text" id="strikes" name="strikes" placeholder="10.0, 11.0" value="996.0, 1000.0, 1004.0, 1008.0" />
+              </div>
+            </div>
+            <div class="form-group row">
+              <label class="col-3 col-form-label" for="transactionFeePercent0">
+                <span class="badge badge-primary">8</span>
+                transactionFee0: (in percent)
+              </label>
+              <div class="col">
+                <input class="form-control" type="text" id="transactionFeePercent0" name="transactionFeePercent0" value="0.0" />
+              </div>
+            </div>
+            <div class="form-group row">
+              <label class="col-3 col-form-label" for="feeTaker0">
+                <span class="badge badge-primary">9</span>
+                feeTaker0: (address)
+              </label>
+              <div class="col">
+                <input class="form-control" type="text" id="feeTaker0" name="feeTaker0" value="0x0000000000000000000000000000000000000000" />
+              </div>
+            </div>
+            <div class="form-group row">
+              <label class="col-3 col-form-label" for="transactionFeePercent1">
+                <span class="badge badge-primary">10</span>
+                transactionFee1: (in percent)
+              </label>
+              <div class="col">
+                <input class="form-control" type="text" id="transactionFeePercent1" name="transactionFeePercent1" value="0.0" />
+              </div>
+            </div>
+            <div class="form-group row">
+              <label class="col-3 col-form-label" for="feeTaker1">
+                <span class="badge badge-primary">11</span>
+                feeTaker1: (address)
+              </label>
+              <div class="col">
+                <input class="form-control" type="text" id="feeTaker1" name="feeTaker1" value="0x0000000000000000000000000000000000000000" />
+              </div>
+            </div>
+            <div class="form-group row">
+              <div class="offset-1 col-3">
+                <label class="col-form-label" style="margin: 0; padding: 0;" for="marketHash">
+                  -&gt; marketHash:
+                </label><br/>
+                <div class="text-muted small" style="padding-left: 1em;">
+                  (calc. over <span class="badge badge-secondary">1</span>&#32;-&#32;<span class="badge badge-secondary">11</span> + signerAddr)
+                </div>
+              </div>
+              <div class="col">
+                <input class="form-control" type="text" id="marketHash" name="marketHash" value="" disabled />
+              </div>
+            </div>
+
+            <div class="form-group row">
+              <div class="offset-3 col">
+                <button class="btn btn-primary" id="marketCreateBtn" name="marketCreateBtn" value="1" disabled>create new market</button>
+              </div>
+            </div>
+          </form>
         </div>
 
-        <div class="form-group">
-          <label class="col-sm-3 control-label" for="marketHash">marketHash</label>
-          <input class="form-control col-sm-9" type="text" id="marketHash" name="marketHash" value="" placeholder="0x000..." />
-        </div>
+        <div class="tab-pane fade" id="marketSettle" role="tabpanel" aria-labelledby="marketSettle-tab">
 
-        <div class="form-group">
-          <label class="col-sm-3 control-label" for="quote">quote</label>
-          <input class="form-control col-sm-9" type="text" id="quote" name="quote" value="" placeholder="1.234" />
-        </div>
+          <h2>Market settlement</h2>
 
-        <div class="form-group">
-          <div class="col-sm-offset-3 col-sm-9" style="padding-left: 0;">
-            <button type="submit" class="btn btn-primary" id="marketSettle" name="marketSettle" value="1" disabled>settle market</button>
-          </div>
+          <form class="form-horizontal">
+
+            <div class="form-group row">
+              <label class="col-3 col-form-label" for="marketHash2">
+        <!--            <span class="badge badge-primary">2</span>-->
+                marketHash:
+              </label>
+              <div class="col">
+                <input class="form-control" type="text" id="marketHash2" name="marketHash2" value="" />
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col">
+
+                <div class="form-group row">
+                  <label class="col-3-sub col col-form-label" for="underlyingString2">
+                    <span class="badge badge-primary">1</span>
+                    underlyingString:
+                  </label>
+                  <div class="col">
+                    <input class="form-control" type="text" id="underlyingString2" name="underlyingString2" placeholder="" value="" disabled />
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label class="col-3-sub col col-form-label" for="expirationDatetime2">
+                      <span class="badge badge-primary">2</span>
+                      expirationDatetime:
+                  </label>
+                  <div class="col">
+                      <input class="form-control" type="text" id="expirationDatetime2" name="expirationDatetime2" value="" disabled />
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label class="col-3-sub col col-form-label" for="ndigit2">
+                      <span class="badge badge-primary">3</span>
+                      ndigit:
+                  </label>
+                  <div class="col">
+                      <input class="form-control" type="text" id="ndigit2" name="ndigit2" value="" disabled />
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label class="col-3-sub col col-form-label" for="baseUnitExp2">
+                      <span class="badge badge-primary">4</span>
+                      baseUnitExp:
+                  </label>
+                  <div class="col">
+                      <input class="form-control" type="text" id="baseUnitExp2" name="baseUnitExp2" value="" disabled />
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label class="col-3-sub col col-form-label" for="objectionPeriod2">
+                      <span class="badge badge-primary">5</span>
+                      objectionPeriod:
+                  </label>
+                  <div class="col">
+                      <input class="form-control" type="text" id="objectionPeriod2" name="objectionPeriod2" value="" disabled />
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-2">
+                <button type="button" class="btn btn-outline-secondary" id="fetchMarketData" name="fetchMarketData" value="1" disabled>fetch market data from contract</button>
+              </div>
+            </div>
+
+            <div class="form-group row">
+              <div class="offset-1 col-3">
+                <label class="col-form-label" style="margin: 0; padding: 0;" for="factHash2">
+                  -&gt; factHash:
+                </label>
+                <div class="text-muted small" style="padding-left: 1em;">
+                  (calc. over <span class="badge badge-secondary">1</span>&#32;-&#32;<span class="badge badge-secondary">5</span>)
+                </div>
+              </div>
+              <div class="col">
+                <input class="form-control" type="text" id="factHash2" name="factHash2" value="" disabled />
+              </div>
+            </div>
+      
+            <div class="form-group row">
+              <label class="col-3 col-form-label" for="finalValue">
+  <!--      <span class="badge badge-primary">12</span>-->
+                finalValue:
+              </label>
+              <div class="col">
+                <input class="form-control" type="text" id="finalValue" name="finalValue" value="" placeholder="e.g. 1.234" />
+              </div>
+            </div>
+      
+            <div class="form-group row">
+              <div class="col-3">
+                <label class="col-form-label" style="margin: 0; padding: 0;" for="signatureFinal">
+  <!--    <span class="badge badge-primary">1</span>-->
+                  signatureFinal:
+                </label><br/>
+                <div class="text-muted small" style="padding-left: 1em;">
+                  factHash
+                  (based on <span class="badge badge-secondary">1</span>&#32;-&#32;<span class="badge badge-secondary">5</span>)
+                  + finalValue
+  <!--(<span class="badge badge-secondary">12</span>) -->
+                signed with signerPrivateKey
+                </div>
+              </div>
+              <div class="col">
+                <textarea class="form-control" style="font-size: 80%;" id="signatureFinal" name="signatureFinal" rows="5"></textarea>
+              </div>
+              <div class="col-2">
+                <button class="btn btn-secondary" id="signatureFinalCalc" name="signatureFinalCalc" value="1" disabled>calc signature for market settling</button>
+              </div>
+            </div>
+
+            <div class="form-group row">
+              <div class="offset-3 col">
+                <button class="btn btn-primary" id="marketSettleBtn" name="marketSettleBtn" value="1" disabled>settle market</button>
+              </div>
+            </div>
+          </form>
         </div>
-      </form>
+      </div>
     </div>
 
     <script>
 
-var setInputFormByID = function(id, value){
+/* reload page on hash change */
+window.addEventListener('hashchange', function(){location.reload();}, false);
+
+window.setInputFormByID = function(id, value, disable /* optional */){
   var elm = document.getElementById(id);
   if (elm){
     elm.value = value;
+    if (typeof(disable) !== 'undefined'){
+      if (disable) {
+        elm.setAttribute('disabled', true);
+      } else {
+        elm.removeAttribute('disabled');
+      }
+    }
+    // trigger all functions listeninf for 'input' event
+    elm.dispatchEvent(new Event('input', {}));
   }
 };
 
-var date = new Date();
-date.setTime(Math.floor((date.getTime() + (10* 60*60*1000)) / (60*60*1000)) * 60*60*1000);
-setInputFormByID('expirationdatetime', date.toUTCString());
-
-var parameters = (function(){
-  // parse browser's hash/query-string append parameters and try to fill out form input values (intended for testing)
-  // e.g. .../market_create.html#?marketsAddr=0x0Eb7e02ED6C8a55f72551E8677eE3bbB25263016&signingKey=0x728c08b6404f3da74525183e0cf444483352e8f13a48ee40ece9185306ec7419
+window.parameters = (function(){
+  // parse browser's hash/query-string append parameters and try to fill out form input values 
+  // e.g. .../market_create.html#?contractAddr=0x0Eb7e02ED6C8a55f72551E8677eE3bbB25263016&signerPrivateKey=0x728c08b6404f3da74525183e0cf444483352e8f13a48ee40ece9185306ec7419
   var query = window.location.hash.replace(/^#?\??/, '');
   var vars = query.split('&');
   var params = [];
   for (var i = 0; i < vars.length; i++) {
     var pair = vars[i].split('=');
-    var key = decodeURIComponent(pair[0]);
-    var value = decodeURIComponent(pair[1]);
-    params[key] = value;
-    setInputFormByID(key, value);
+    if (pair.length === 2){
+      var key = decodeURIComponent(pair[0]);
+      var value = decodeURIComponent(pair[1].replace(/\+/g, '%20'));
+      params[key] = value;
+      window.setInputFormByID(key, value, true);
+    }
   }
   return params;
 })();
+
+var date;
+if (window.parameters.settlementDatetime){
+  date = new Date(0); // The 0 there is the key, which sets the date to the epoch
+  date.setUTCSeconds(parseInt(window.parameters.settlementDatetime));
+  window.setInputFormByID('expirationDatetime', date.toUTCString(), true);
+}else {
+  date = new Date();
+  date.setTime(Math.floor((date.getTime() + (10* 60*60*1000)) / (60*60*1000)) * 60*60*1000);
+  window.setInputFormByID('expirationDatetime', date.toUTCString());
+}
+
+if ((window.parameters.signatureFactHash) || (window.parameters.signatureFinal)){
+  window.setInputFormByID('signerPrivateKey', ' - not required - (signature present)', true);
+}
+if (window.parameters.signatureFinal){
+  document.getElementById('marketSettle-tab').classList.add('active');
+  document.getElementById('marketSettle').classList.add('active');
+  document.getElementById('marketSettle').classList.add('show');
+}else{
+  document.getElementById('marketCreate-tab').classList.add('active');
+  document.getElementById('marketCreate').classList.add('active');
+  document.getElementById('marketCreate').classList.add('show');
+}
+
+    </script>
+
+    <script type="text/javascript" src="node_modules/jquery/dist/jquery.min.js"></script>
+    <script type="text/javascript" src="node_modules/popper.js/dist/umd/popper.min.js"></script>
+    <script type="text/javascript" src="node_modules/bootstrap/dist/js/bootstrap.min.js" ></script>
+    <script type="text/javascript" src="node_modules/requirejs/require.js"></script>
+
+    <script>
+
+
+// initialize all popover infos
+$('[data-toggle="popover"]').popover();
+
+/* show an error to the user */
+var modal_error = function(str){
+  $('#modal').modal();
+  document.getElementById('modaltitle').textContent = 'Error';
+  document.getElementById('modalbody').textContent = str;
+  document.getElementById('modalheader').setAttribute('style', 'background-color: #d9534f; border-top-left-radius: 3px; border-top-right-radius: 3px;');
+};
+
+/* show success to the user */
+var modal_success = function(str){
+  $('#modal').modal();
+  document.getElementById('modaltitle').textContent = 'Success';
+  document.getElementById('modalbody').textContent = str;
+  document.getElementById('modalheader').setAttribute('style', 'background-color: #0480be; border-top-left-radius: 3px; border-top-right-radius: 3px;');
+};
 
 require.config({
   paths: {
@@ -223,20 +555,6 @@ require.config({
   ]
 });
 
-/* show an error to the user */
-var modal_error = function(str){
-  $('#modal').modal();
-  document.getElementById('modaltitle').textContent = 'Error';
-  document.getElementById('modalbody').textContent = str;
-  document.getElementById('modalheader').setAttribute('style', 'background-color: #d9534f; border-top-left-radius: 5px; border-top-right-radius: 5px;');
-};
-
-var modal_success = function(str){
-  $('#modal').modal();
-  document.getElementById('modaltitle').textContent = 'Success';
-  document.getElementById('modalbody').textContent = str;
-  document.getElementById('modalheader').setAttribute('style', 'background-color: #0480be; border-top-left-radius: 5px; border-top-right-radius: 5px;');
-};
 require(
   [
     'web3',
@@ -245,6 +563,171 @@ require(
     'digioptions-tools.js'
   ],
   function(Web3, factsigner, digioptionsContracts, digioptionsTools){
+
+    var web3 = new Web3(window.ethereum);
+
+    /* fill typeDuration select field with all possible options */
+    for (var typeDuration in digioptionsContracts.constants.typeDuration){
+      var typeDurationString = digioptionsContracts.constants.typeDuration[typeDuration];
+      var option = document.createElement('option');
+      option.text = typeDuration + ' (' + typeDurationString + ')';
+      option.value = typeDuration;
+      document.getElementById('typeDuration').add(option); 
+    }
+
+    var getAccountSign = function(){
+      try {
+        return web3.eth.accounts.privateKeyToAccount(document.getElementById('signerPrivateKey').value);
+      } catch (err){
+        throw new Error('"signerPrivateKey" invalid');
+      } 
+    };
+
+    var getContractAddr = function(){
+      var contractAddr = document.getElementById('contractAddr').value;
+      if (! web3.utils.isAddress(contractAddr)){
+        throw new Error('Invalid contractAddr "' + contractAddr + '" !');
+      }
+      return contractAddr;
+    };
+
+    var parseIntOrThrowError = function(intStr, error){
+      intStr = intStr.replace(/^\s+|\s+$/g, ''); // strip whitespace
+      var value = Number(intStr);
+      if (isNaN(value) || (intStr.length===0)){
+        throw new Error(error);
+      }
+      return value;
+    };
+
+    var parseFloatOrThrowError = function(floatStr, baseUnitExp, error){
+      var floatBn;
+      try {
+        floatStr = floatStr.replace(/^\s+|\s+$/g, ''); // strip whitespace
+        floatBn = factsigner.parseFloatToBn(floatStr, baseUnitExp);
+      } catch (err){
+        throw new Error(error);
+      }
+      return floatBn;
+    };
+
+    var validateAddressOrThrowError = function(addr, error){
+      if (! web3.utils.isAddress(addr))
+        throw new Error(error);
+      return addr;
+    };
+
+    var getBaseUnitExp = function(){return parseIntOrThrowError(document.getElementById('baseUnitExp').value, '"baseUnitExp" invalid');};
+
+    var getFacts = function(){
+      var underlying;
+      try {
+        underlying = factsigner.stringToHex(document.getElementById('underlyingString').value); // TODO name vs underlying
+      } catch (err){
+        throw new Error('"underlyingString" invalid (e.g. too long)');
+      }
+      return {
+        underlying: underlying,
+        baseUnitExp: getBaseUnitExp(),
+        ndigit: parseIntOrThrowError(document.getElementById('ndigit').value, '"ndigit" invalid'),
+        objectionPeriod: parseIntOrThrowError(document.getElementById('objectionPeriod').value, '"objectionPeriod" invalid'),
+        expirationDatetime: (new Date(document.getElementById('expirationDatetime').value)).getTime()/1000
+      };
+    };
+
+    var getStrikes = function(){
+      try {
+        var baseUnitExp = getBaseUnitExp(); 
+        var strikes = document.getElementById('strikes').value.split(',').map(
+          function(floatStr){
+            floatStr = floatStr.replace(/^\s+|\s+$/g, ''); // strip whitespace
+            var float = factsigner.parseFloatToBn(floatStr, baseUnitExp);
+            return float.toString();
+          }
+        );
+        return strikes;
+      } catch (err){
+        throw new Error('"strikes" invalid');
+      }
+    };
+
+    var getMarketBaseData = function(){
+      return Object.assign(
+        getFacts(),
+        {
+          strikes: getStrikes(),
+          typeDuration: parseIntOrThrowError(document.getElementById('typeDuration').value, '"typeDuration" invalid'),
+          signerAddr: validateAddressOrThrowError(document.getElementById('signerAddr').value, '"signerAddr" invalid'),
+          feeTaker0: validateAddressOrThrowError(document.getElementById('feeTaker0').value, '"feeTaker0" invalid'),
+          feeTaker1: validateAddressOrThrowError(document.getElementById('feeTaker1').value, '"feeTaker1" invalid'),
+          // TODO 16 !!! based on baseUnitExp?
+          transactionFee0: parseFloatOrThrowError(document.getElementById('transactionFeePercent0').value, 16, '"transactionFee0" invalid').toString(), // input in percent (float)
+          transactionFee1: parseFloatOrThrowError(document.getElementById('transactionFeePercent1').value, 16, '"transactionFee1" invalid').toString() // input in percent (float)
+        }
+      );
+    };
+
+    var updateSignerAddress = function(){
+      if ((window.parameters.signatureFactHash) || (window.parameters.signatureFinal))
+        return;
+
+      try{
+        window.setInputFormByID('signerAddr', getAccountSign().address);
+      } catch (err){
+        window.setInputFormByID('signerAddr', err);
+      }
+    };
+
+    var updateFactHash = function(){
+      try{
+        window.setInputFormByID('factHash', factsigner.factHash(getFacts()));
+      } catch (err){
+        window.setInputFormByID('factHash', err);
+      }
+    };
+
+    var updateMarketHash = function(){
+      try{
+        window.setInputFormByID('marketHash', digioptionsContracts.marketHash(getMarketBaseData()));
+      } catch (err){
+        window.setInputFormByID('marketHash', err);
+      }
+    };
+
+    // automatically update signerPrivateKey
+    document.querySelectorAll(
+      '#signerPrivateKey'
+    ).forEach(function(elem) {
+      elem.addEventListener('input', function() {
+        updateSignerAddress();
+      });
+    });
+
+    // automatically update factHash
+    document.querySelectorAll(
+      '#underlyingString, #expirationDatetime, #ndigit, #baseUnitExp, #objectionPeriod'
+    ).forEach(function(elem) {
+      elem.addEventListener('input', function() {
+        updateFactHash();
+      });
+    });
+
+    // automatically update marketHash
+    document.querySelectorAll(
+      '#signerAddr, ' +
+      '#underlyingString, #expirationDatetime, #ndigit, #baseUnitExp, #objectionPeriod, ' +
+      '#typeDuration, #strikes, #transactionFeePercent0, #transactionFeePercent1, #feeTaker0, #feeTaker1'
+    ).forEach(function(elem) {
+      elem.addEventListener('input', function() {
+        updateMarketHash();
+      });
+    });
+
+    // set initial factHash/marketHash
+    updateSignerAddress();
+    updateFactHash();
+    updateMarketHash();
+
     var dataNetworks = digioptionsTools.dataNetworks;
 
     if (! window.ethereum){
@@ -259,19 +742,16 @@ require(
       location.reload();
     });
 
-    var web3 = new Web3(window.ethereum);
     window.ethereum.enable()
       .then(function(){
         return web3.eth.net.getNetworkType();
       })
       .then(function(network){
         var dataNetwork = dataNetworks[network];
-        setInputFormByID('network', network + (dataNetwork && dataNetwork.testnet ? ' (testnet)' : ''));
-
-        //var validNetworks = Object.keys(dataNetworks).filter(function(name){return dataNetworks[name].contractDescriptions.length != 0;});
+        window.setInputFormByID('network', network + (dataNetwork && dataNetwork.testnet ? ' (testnet)' : ''));
 
         if ((! dataNetwork) || (! dataNetwork.contractDescriptions)){
-          var header = document.createElement('li');
+          var header = document.createElement('h6');
           header.setAttribute('class', 'dropdown-header');
           header.textContent = 'No default contracts for network "' + network + '" known';
           document.getElementById('dropdownContractList').appendChild(header);
@@ -285,6 +765,7 @@ require(
               addr
             );
 
+            // TODO set one contract as default ?
             contract.methods.getContractInfo().call()
               .then(function(contractInfo){
                 var marketsAddr = contractInfo && contractInfo.digiOptionsMarketsAddr;
@@ -295,13 +776,12 @@ require(
                   anchor.setAttribute('href', '#');
                   anchor.onclick = function(evt){
                     evt.preventDefault();
-                    setInputFormByID('marketsAddr', marketsAddr);
+                    window.setInputFormByID('contractAddr', marketsAddr);
                   };
                   anchor.textContent = marketsAddr;
+                  anchor.setAttribute('class', 'dropdown-item');
 
-                  var elm = document.createElement('li');
-                  elm.appendChild(anchor);
-                  document.getElementById('dropdownContractList').appendChild(elm);
+                  document.getElementById('dropdownContractList').appendChild(anchor);
                 }
               })
               .catch(function(/*err*/){
@@ -313,37 +793,73 @@ require(
 
         document.getElementById('createSigningKey').onclick = function(evt){
           evt.preventDefault();
-          setInputFormByID('signingKey', web3.eth.accounts.create().privateKey);
+          window.setInputFormByID('signerPrivateKey', web3.eth.accounts.create().privateKey);
         };
 
-        document.getElementById('marketNew').onclick = function(evt){
+        document.getElementById('calcTypeDuration').onclick = function(evt){
           evt.preventDefault();
-          console.log('click create new market');
+          console.log('calcTypeDuration');
           try {
-            var accountSign = web3.eth.accounts.privateKeyToAccount(document.getElementById('signingKey').value);
-            console.log('accountSign:', accountSign);
-
-            var marketsAddr = document.getElementById('marketsAddr').value;
-            console.log('marketsAddr:', marketsAddr);
-
-            if (! web3.utils.isAddress(marketsAddr)){
-              throw new Error('Invalid markets address "' + marketsAddr + '" !');
-            }
-
             var marketsContract = new web3.eth.Contract(
               digioptionsContracts.digioptionsMarketsAbi(),
-              marketsAddr
+              getContractAddr()
+            );
+            marketsContract.methods.calcTypeDuration(getFacts().expirationDatetime).call()
+              .then(function(typeDuration){
+                if (typeDuration === null)
+                  throw new Error('cannot determine "typeDuration":\nmaybe "expirationDatetime" is not in the future ?');
+                window.setInputFormByID('typeDuration', typeDuration);
+              })
+              .catch(function(err){
+                modal_error(err + '\r\n\r\nstack trace:\r\n' + err.stack);
+              });
+          } catch (err){
+            modal_error(err + '\r\n\r\nstack trace:\r\n' + err.stack);
+          }
+        };
+
+        document.getElementById('signatureFactHashCalc').onclick = function(evt){
+          evt.preventDefault();
+          try {
+            var accountSign = getAccountSign();
+            var factHash = factsigner.factHash(getFacts());
+            var signature = factsigner.sign(web3, accountSign.privateKey, factHash);
+            window.setInputFormByID('signatureFactHash', JSON.stringify(signature, null, 2));
+          } catch (err){
+            window.setInputFormByID('signatureFactHash', err);
+          }
+        };
+
+        document.getElementById('signatureFinalCalc').onclick = function(evt){
+          evt.preventDefault();
+          try {
+            var baseUnitExp = getBaseUnitExp();
+            var valueBn = parseFloatOrThrowError(document.getElementById('finalValue').value, baseUnitExp, '"finalValue" invalid');
+            var hash = factsigner.settlementHash(
+              document.getElementById('factHash').value,
+              valueBn,
+              factsigner.SETTLEMENT_TYPE_FINAL
+            );
+            var signature_market_expire = factsigner.sign(web3, getAccountSign().privateKey, hash);
+            window.setInputFormByID('signatureFinal', JSON.stringify(signature_market_expire, null, 2));
+          } catch (err){
+            window.setInputFormByID('signatureFinal', err);
+          }
+        };
+
+        document.getElementById('fetchMarketData').onclick = function(evt){
+          evt.preventDefault();
+          try {
+            var marketsContract = new web3.eth.Contract(
+              digioptionsContracts.digioptionsMarketsAbi(),
+              getContractAddr()
             );
 
-            var expirationDatetime = (new Date(document.getElementById('expirationdatetime').value)).getTime()/1000;
-            console.log('expirationDatetime:', expirationDatetime);
-
-            var marketBaseData;
-            var baseUnitExp = parseInt(document.getElementById('baseUnitExp').value, 10);
+            var marketHash = document.getElementById('marketHash2').value;
 
             marketsContract.methods.getContractInfo().call()
               .then(function(contractInfo){
-                console.log('contractInfo', contractInfo);
+                //console.log('contractInfo', contractInfo);
                 if (! contractInfo){
                   throw new Error('Error reading contract info/version! Maybe contract address is invalid?');
                 }
@@ -351,51 +867,92 @@ require(
                   throw new Error('Invalid contract type');
                 }
 
-                return marketsContract.methods.calcTypeDuration(expirationDatetime).call();
+                return marketsContract.methods.getMarketData(marketHash).call();
+              })
+              .then(function(marketData){
+
+                if (Number(marketData.marketBaseData.expirationDatetime) === 0){
+                  throw new Error('Market does not (yet) exists!');
+                }
+
+                var date = new Date(0); // The 0 there is the key, which sets the date to the epoch
+                date.setUTCSeconds(marketData.marketBaseData.expirationDatetime);
+
+                window.setInputFormByID('expirationDatetime', date.toUTCString(), true);
+                window.setInputFormByID('underlyingString2', factsigner.hexToString(marketData.marketBaseData.underlying));
+                window.setInputFormByID('expirationDatetime2', date.toUTCString());
+                window.setInputFormByID('ndigit2', marketData.marketBaseData.ndigit);
+                window.setInputFormByID('baseUnitExp2', marketData.marketBaseData.baseUnitExp);
+                window.setInputFormByID('objectionPeriod2', marketData.marketBaseData.objectionPeriod);
+
+                window.setInputFormByID('factHash2', factsigner.factHash(marketData.marketBaseData));
+              })
+              .catch(function(err){
+                modal_error(err + '\r\n\r\nstack trace:\r\n' + err.stack);
+              });
+          } catch (err){
+            modal_error(err + '\r\n\r\nstack trace:\r\n' + err.stack);
+          }
+        };
+
+        document.getElementById('marketCreateBtn').onclick = function(evt){
+          evt.preventDefault();
+          //console.log('click create new market');
+          try {
+
+            var marketsContract = new web3.eth.Contract(
+              digioptionsContracts.digioptionsMarketsAbi(),
+              getContractAddr()
+            );
+
+            var marketBaseData = getMarketBaseData();
+            var marketHash = digioptionsContracts.marketHash(marketBaseData);
+
+            var signature;
+            try {
+              //console.log(document.getElementById('signatureFactHash'));
+              signature = JSON.parse(document.getElementById('signatureFactHash').value);
+            } catch (err){
+              throw new Error('"signatureFactHash" invalid');
+            } 
+
+            marketsContract.methods.getContractInfo().call()
+              .then(function(contractInfo){
+                //console.log('contractInfo', contractInfo);
+                if (! contractInfo){
+                  throw new Error('Error reading contract info/version! Maybe contract address is invalid?');
+                }
+                if (contractInfo.contractType !== digioptionsContracts.constants.contractType.CONTRACT_DIGIOPTIONSMARKETS){
+                  throw new Error('Invalid contract type');
+                }
+
+                return marketsContract.methods.getMarketData(marketHash).call();
+              })
+              .then(function(marketData){
+
+                if (Number(marketData.marketBaseData.expirationDatetime) !== 0){
+                  throw new Error('Market already exists!');
+                }
+
+                return marketsContract.methods.calcTypeDuration(getFacts().expirationDatetime).call();
               })
               .then(function(typeDuration) {
-                console.log('typeDuration:', typeDuration);
 
-                marketBaseData = {
-                  baseUnitExp: baseUnitExp,
-                  underlying: factsigner.stringToHex(document.getElementById('name').value),
-                  ndigit: parseInt(document.getElementById('ndigit').value, 10),
-                  objectionPeriod: parseInt(document.getElementById('objectionPeriod').value, 10),
-                  expirationDatetime: expirationDatetime,
-                  strikes: document.getElementById('strikes').value.split(',').map(
-                    function(floatStr){
-                      floatStr.replace(/^\s+|\s+$/g, ''); // strip whitespace
-                      return factsigner.parseFloatToBn(floatStr, baseUnitExp).toString();
-                    }
-                  ),
-                  typeDuration: typeDuration,
-                  signerAddr: accountSign.address,
-                  feeTaker0: document.getElementById('feeTaker0').value,
-                  feeTaker1: document.getElementById('feeTaker1').value,
-                  transactionFee0: factsigner.parseFloatToBn(document.getElementById('transactionFeePercent0').value, 16).toString(), // input in percent (float)
-                  transactionFee1: factsigner.parseFloatToBn(document.getElementById('transactionFeePercent1').value, 16).toString() // input in percent (float)
-                };
-                console.log('marketBaseData:', marketBaseData);
+                if (typeDuration !== marketBaseData.typeDuration){
+                  throw new Error('"typeDuration" invalid (expected typeDuration: ' + typeDuration + ')');
+                }
 
                 return web3.eth.getAccounts();
               })
               .then(function(accounts) {
-                console.log('from (account): ', accounts[0]);
+                //console.log('from (account): ', accounts[0]);
                 if (! web3.utils.isAddress(accounts[0])){
                   throw new Error('No account! Maybe you need to unlock MetaMask?');
                 }
 
-                var factHash = factsigner.factHash(marketBaseData);
-                console.log('factHash:', factHash);
-                setInputFormByID('factHash', factHash);
-                var marketHash = digioptionsContracts.marketHash(marketBaseData);
-                console.log('marketHash:', marketHash);
-                setInputFormByID('marketHash', marketHash);
-                var signature = factsigner.sign(web3, accountSign.privateKey, factHash);
-                console.log('signature:', signature);
                 var marketUrl = digioptionsTools.dataNetworksUtils.getDigioptionsUrl(
                   'pageMarket',
-                  {network: network, contractAddr: marketsAddr, marketHash: marketHash},
+                  {network: network, contractAddr: getContractAddr(), marketHash: marketHash},
                   false /* relative url */
                 );
 
@@ -409,7 +966,11 @@ require(
                     //gas: 3000000,
                   })
                   .on('transactionHash', function(/*transactionHash*/){
-                    modal_success('Create market transaction sent.\r\n\r\nIf the transaction succeeds you can view the market at:\r\n' + marketUrl);
+                    modal_success(
+                      'Create market transaction sent.\r\n\r\n' + 
+                      'Do not forget to remember the marketHash:\r\n' + 
+                      marketHash + '\r\n\r\n' + 
+                      'If the transaction succeeds you can view the market at:\r\n' + marketUrl);
                   });
               })
               .then(function(){
@@ -423,32 +984,30 @@ require(
           }
         };
 
-        document.getElementById('marketSettle').onclick = function(evt){
+        document.getElementById('marketSettleBtn').onclick = function(evt){
           evt.preventDefault();
           console.log('click create settle market');
           try {
-            var accountSign = web3.eth.accounts.privateKeyToAccount(document.getElementById('signingKey').value);
-            console.log('accountSign:', accountSign);
-
-            var marketsAddr = document.getElementById('marketsAddr').value;
-            console.log('marketsAddr:', marketsAddr);
-
-            if (! web3.utils.isAddress(marketsAddr)){
-              throw new Error('Invalid markets address "' + marketsAddr + '" !');
-            }
 
             var marketsContract = new web3.eth.Contract(
               digioptionsContracts.digioptionsMarketsAbi(),
-              marketsAddr
+              getContractAddr()
             );
 
-            var marketHash = document.getElementById('marketHash').value;
-            var baseUnitExp;
-            console.log('marketHash:', marketHash);
+            var marketHash = document.getElementById('marketHash2').value; // TODO validate
+            var baseUnitExp = parseIntOrThrowError(document.getElementById('baseUnitExp2').value, '"baseUnitExp" invalid');
+
+            var signature;
+            try {
+              //console.log(document.getElementById('signatureFinal'));
+              signature = JSON.parse(document.getElementById('signatureFinal').value);
+            } catch (err){
+              throw new Error('"signatureFinal" invalid');
+            } 
 
             marketsContract.methods.getContractInfo().call()
               .then(function(contractInfo){
-                console.log('contractInfo', contractInfo);
+                //console.log('contractInfo', contractInfo);
                 if (! contractInfo){
                   throw new Error('Error reading contract info/version! Maybe contract address is invalid?');
                 }
@@ -459,35 +1018,29 @@ require(
                 return marketsContract.methods.getMarketData(marketHash).call();
               })
               .then(function(marketData){
-                console.log('marketData', marketData);
-                console.log('baseUnitExp', parseInt(marketData.marketBaseData.baseUnitExp));
-                baseUnitExp = parseInt(marketData.marketBaseData.baseUnitExp);
+                //console.log('marketData', marketData);
 
                 if (Number(marketData.marketBaseData.expirationDatetime) === 0){
-                  throw new Error('Market does not exists!');
+                  throw new Error('Market does not (yet) exists!');
+                }
+
+                if (marketData.data.settled) {
+                  throw new Error('Market is already settled!');
                 }
 
                 return web3.eth.getAccounts();
               })
               .then(function(accounts) {
-                console.log('from (account): ', accounts[0]);
+                //console.log('from (account): ', accounts[0]);
                 if (! web3.utils.isAddress(accounts[0])){
                   throw new Error('No account! Maybe you need to unlock MetaMask?');
                 }
 
-                var valueBn = factsigner.parseFloatToBn(document.getElementById('quote').value, baseUnitExp);
-
-                var hash = factsigner.settlementHash(
-                  document.getElementById('factHash').value,
-                  valueBn,
-                  factsigner.SETTLEMENT_TYPE_FINAL
-                );
-                var signature_market_expire = factsigner.sign(web3, accountSign.privateKey, hash);
-                console.log('signature_market_expire:', signature_market_expire);
+                var valueBn = factsigner.parseFloatToBn(document.getElementById('finalValue').value, baseUnitExp);
 
                 return marketsContract.methods.settlement(
                   marketHash,
-                  signature_market_expire,
+                  signature,
                   valueBn.toString(),
                   10 // just do payout for 10 user only // TODO
                 )
@@ -511,11 +1064,21 @@ require(
           }
         };
 
-        // enable buttons (e.g. "create signing key" / "create new market")
-        document.getElementById('createSigningKey').disabled = false;
-        document.getElementById('marketNew').disabled = false;
-        document.getElementById('marketSettle').disabled = false;
+        // enable buttons after handlers are installed (e.g. "create signing key" / "create new market")
+        document.getElementById('marketCreateBtn').removeAttribute('disabled');
+        document.getElementById('marketSettleBtn').removeAttribute('disabled');
+        document.getElementById('calcTypeDuration').removeAttribute('disabled');
+        document.getElementById('fetchMarketData').removeAttribute('disabled');
 
+        if (!((window.parameters.signatureFactHash) || (window.parameters.signatureFinal))){
+          document.getElementById('createSigningKey').removeAttribute('disabled');
+        }
+        if (! window.parameters.signatureFactHash){
+          document.getElementById('signatureFactHashCalc').removeAttribute('disabled');
+        }
+        if (!window.parameters.signatureFinal){
+          document.getElementById('signatureFinalCalc').removeAttribute('disabled');
+        }
       })
       .catch(function(err){
         modal_error(err + '\r\n\r\nstack trace:\r\n' + err.stack);
@@ -525,5 +1088,5 @@ require(
 );
 
     </script>
-</body>
+  </body>
 </html>
