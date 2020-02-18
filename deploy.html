@@ -5,6 +5,7 @@
     <title>Deploy contracts example</title>
 
     <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="icon" href="data:;base64,iVBORw0KGgo="/>
 
     <script type="text/javascript" src="node_modules/jquery/dist/jquery.min.js"></script>
     <script type="text/javascript" src="node_modules/popper.js/dist/umd/popper.min.js"></script>
@@ -14,7 +15,7 @@
     <style>
 button:disabled {
   cursor: not-allowed;
-}  
+}
     </style>
 </head>
 <body>
@@ -53,24 +54,24 @@ button:disabled {
             network:
           </label>
           <div class="col">
-            <input class="form-control" type="text" id="network" name="name" placeholder="" value="" disabled />
+            <input class="form-control" type="text" id="network" name="network" placeholder="" value="" disabled />
           </div>
         </div>
 
         <div class="form-group row">
           <label class="col-3 control-label" for="contract">contract:</label>
           <div class="col">
-	    <select id="contract" class="col form-control">
-	    </select>
-	  </div>
-	</div>
+            <select id="contract" name="contract" class="col form-control">
+            </select>
+          </div>
+        </div>
 
         <div class="form-group row" style="display: none" id="form-group-marketsAddr">
           <div class="col-3">
             <label class="col-form-label" for="marketsAddr">
                 markets contract (address):
             </label>
-<!--            <a tabindex="0" style="padding-left: 3px; padding-right: 3px" class="text-white bg-secondary" role="button" data-toggle="popover" data-container="body" data-placement="top" data-trigger="focus" title="Dismissible popover" data-content="And here's some amazing content. It's very engaging. Right?">?</a>-->
+<!-- <a tabindex="0" style="padding-left: 3px; padding-right: 3px" class="text-white bg-secondary" role="button" data-toggle="popover" data-container="body" data-placement="top" data-trigger="focus" title="Dismissible popover" data-content="And here's some amazing content. It's very engaging. Right?">?</a>-->
           </div>
           <div class="input-group col">
             <input class="form-control" type="text" id="marketsAddr" name="marketsAddr" placeholder="0x..." value="" />
@@ -114,7 +115,9 @@ var setInputFormByID = function(id, value, disable /* optional */){
 
 require.config({
   paths: {
-    'web3': 'assets/js/web3.min'
+    'web3': 'assets/js/web3.min',
+    'web3-utils': 'assets/js/web3-utils.min',
+    'eth-lib-account': 'assets/js/eth-lib-account.min'
   },
   packages: [
     {
@@ -186,14 +189,14 @@ require(
       },
       'marketLister': {
         version: digioptionsContracts.versionMarketLister,
-        bin: digioptionsMarketListerBin(),
         abi: digioptionsContracts.digioptionsMarketListerAbi(),
+        bin: digioptionsMarketListerBin()
       }
       /*,
       'meta': { // TODO
         version: digioptionsContracts.versionMeta,
-        bin: digioptionsMetaBin(),
-        abi:
+        abi: ...,
+        bin: digioptionsMetaBin()
         }
       */
     };
@@ -305,7 +308,7 @@ require(
                   arguments: deployArguments
                 })
                   .send({
-                    gas: 4000000, // TODO
+                    gas: 4500000, // TODO
                     from: accounts[0]
                   })
                   .on('transactionHash', function(/*transactionHash*/){
