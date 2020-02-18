@@ -1065,18 +1065,26 @@ require(
 
           var contracts = {};
           for (var contractDescriptionIdx in dataNetwork.contractDescriptions){
-            var addr = dataNetwork.contractDescriptions[contractDescriptionIdx].addr;
+            var contractAddr = dataNetwork.contractDescriptions[contractDescriptionIdx].addr;
             var contract = new web3.eth.Contract(
               digioptionsContracts.digioptionsMarketsAbi(),
-              addr
+              contractAddr
             );
 
             // TODO set one contract as default ?
             contract.methods.getContractInfo().call()
               .then(function(contractInfo){
-                var marketsAddr = contractInfo && contractInfo.digiOptionsMarketsAddr;
+                if (! contractInfo){
+                  throw new Error('reading contract info/version failed');
+                }
+                var contractDescription = digioptionsContracts.contractInfoToContractDescription(
+                  web3,
+                  contractAddr,
+                  contractInfo
+                );
+                var marketsAddr = contractDescription.digiOptionsMarketsAddr;
                 if (marketsAddr && (!contracts[marketsAddr])){
-                  contracts[contractInfo.digiOptionsMarketsAddr] = true; // add each addr only once
+                  contracts[marketsAddr] = true; // add each addr only once
 
                   var anchor = document.createElement('a');
                   anchor.setAttribute('href', '#');
@@ -1116,7 +1124,7 @@ require(
             marketsContract.methods.calcMarketInterval(getExpirationDatetime()).call()
               .then(function(marketInterval){
                 if (marketInterval === null)
-                  throw new Error('cannot determine "marketInterval" - nmaybe "expirationDatetime" is invalid or not in the future ?');
+                  throw new Error('cannot determine "marketInterval":\nmaybe "expirationDatetime" is invalid or not in the future ?');
                 setInputFormByID('marketInterval', marketInterval);
               })
               .catch(function(err){
@@ -1177,9 +1185,10 @@ require(
         document.getElementById('fetchMarketData').onclick = function(evt){
           evt.preventDefault();
           try {
+            var contractAddr = getContractAddr();
             var marketsContract = new web3.eth.Contract(
               digioptionsContracts.digioptionsMarketsAbi(),
-              getContractAddr()
+              contractAddr
             );
 
             var marketHash = document.getElementById('marketHash').value;
@@ -1192,7 +1201,7 @@ require(
                 }
                 var contractDescription = digioptionsContracts.contractInfoToContractDescription(
                   web3,
-                  getContractAddr(),
+                  contractAddr,
                   contractInfo
                 );
                 //console.log('contractDescription', contractDescription);
