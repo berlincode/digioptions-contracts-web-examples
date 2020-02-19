@@ -898,7 +898,7 @@ require(
       try {
         return parseJsonArray(document.getElementById('namedRanges').value, 'string').map(
           function(jsonStr){
-            return factsigner.stringToHexNamedRange(JSON.parse(jsonStr));
+            return factsigner.stringToNamedRange(JSON.parse(jsonStr));
           }
         );
       } catch (err){
@@ -910,7 +910,7 @@ require(
       try {
         return parseJsonArray(document.getElementById('strikes').value, 'string').map(
           function(jsonStr){
-            return factsigner.stringToHexNamedRange(JSON.parse(jsonStr));
+            return factsigner.stringToNamedRange(JSON.parse(jsonStr));
           }
         );
       } catch (err){
@@ -1146,7 +1146,7 @@ require(
           try {
             var accountSign = getAccountSign();
             var factHash = factsigner.factHash(getFacts());
-            var signature = factsigner.signFacts(factHash, accountSign.privateKey);
+            var signature = factsigner.signFactsignerMessage(factHash, accountSign.privateKey);
             setInputFormByID('signatureFactHash', JSON.stringify(signature, null, 2));
           } catch (err){
             setInputFormByID('signatureFactHash', err);
@@ -1158,24 +1158,23 @@ require(
           try {
             var isStriked = Boolean(parseIntOrThrowError(document.getElementById('configMarketType2').value, '"configMarketType" invalid'));
 
-            var valueBnOrHex;
+            var value;
             if (isStriked){
               /* striked market */
               var baseUnitExp = parseIntOrThrowError(document.getElementById('baseUnitExp2').value, '"baseUnitExp" invalid');
-              valueBnOrHex = parseFloatOrThrowError(document.getElementById('finalValue').value, baseUnitExp, '"finalValue" invalid');
+              value = parseFloatOrThrowError(document.getElementById('finalValue').value, baseUnitExp, '"finalValue" invalid');
             } else {
               /* named market */
 // TODO is finalValue int128 like namedRange or int256?
-              valueBnOrHex = factsigner.stringToHexNamedRange(parseJsonString(document.getElementById('finalValue').value, '"finalValue" must be a (json) string'));
-              //valueBnOrHex = factsigner.stringToHexUnderlying(parseJsonString(document.getElementById('finalValue').value, '"finalValue" must be a (json) string'));
-// TODO check valueBnOrHex in namedRanges!
+              value = factsigner.stringToNamedRange(parseJsonString(document.getElementById('finalValue').value, '"finalValue" must be a (json) string'));
+// TODO check value in namedRanges!
             }
             var hash = factsigner.settlementHash(
               document.getElementById('factHash2').value,
-              valueBnOrHex,
+              value,
               factsigner.constants.settlementType.FINAL
             );
-            var signature_market_expire = factsigner.signFacts(hash, getAccountSign().privateKey);
+            var signature_market_expire = factsigner.signFactsignerMessage(hash, getAccountSign().privateKey);
             setInputFormByID('signatureFinal', JSON.stringify(signature_market_expire, null, 2));
           } catch (err){
             setInputFormByID('signatureFinal', err);
@@ -1228,7 +1227,7 @@ require(
                 setInputFormByID('marketCategory2', marketData.marketBaseData.marketCategory);
                 setInputFormByID('ndigit2', marketData.marketBaseData.ndigit);
                 setInputFormByID('baseUnitExp2', marketData.marketBaseData.baseUnitExp);
-                setInputFormByID('namedRanges2', (marketData.marketBaseData.config & factsigner.constants.configMarketTypeIsStrikedMask) ? '[ ]' : JSON.stringify(marketData.marketBaseData.strikes.map(function(x){return factsigner.hexToString(web3.utils.toHex(x));}), null, 1));
+                setInputFormByID('namedRanges2', (marketData.marketBaseData.config & factsigner.constants.configMarketTypeIsStrikedMask) ? '[ ]' : JSON.stringify(marketData.marketBaseData.strikes.map(function(x){return factsigner.namedRangeToString(web3.utils.toHex(x));}), null, 1));
 
                 setInputFormByID('factHash2', factsigner.factHash(marketData.marketBaseData));
 
@@ -1405,21 +1404,20 @@ require(
 
 // TODO duplicate
                 var isStriked = Boolean(parseIntOrThrowError(document.getElementById('configMarketType2').value, '"configMarketType" invalid'));
-                var valueBnOrHex;
+                var value;
                 if (isStriked){
                   /* striked market */
                   var baseUnitExp = parseIntOrThrowError(document.getElementById('baseUnitExp2').value, '"baseUnitExp" invalid');
-                  valueBnOrHex = parseFloatOrThrowError(document.getElementById('finalValue').value, baseUnitExp, '"finalValue" invalid');
+                  value = parseFloatOrThrowError(document.getElementById('finalValue').value, baseUnitExp, '"finalValue" invalid');
                 } else {
                   /* named market */
-                  valueBnOrHex = factsigner.stringToHexNamedRange(parseJsonString(document.getElementById('finalValue').value, '"finalValue" must be a (json) string'));
-                  //valueBnOrHex = factsigner.stringToHexUnderlying(parseJsonString(document.getElementById('finalValue').value, '"finalValue" must be a (json) string'));
+                  value = factsigner.stringToNamedRange(parseJsonString(document.getElementById('finalValue').value, '"finalValue" must be a (json) string'));
                 }
 
                 return marketsContract.methods.settlement(
                   marketHash,
                   signature,
-                  valueBnOrHex.toString(),
+                  value.toString(),
                   [], // users // TODO
                   [] // TODO offerHash
                 )
