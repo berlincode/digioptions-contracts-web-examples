@@ -165,12 +165,12 @@ button:disabled {
           <form class="form-horizontal">
 
             <div class="form-group row">
-              <label class="col-3 col-form-label" for="underlyingString">
+              <label class="col-3 col-form-label" for="underlyingParts">
                 <span class="badge badge-primary" style="width: 2em;">1</span>
-                underlyingString:
+                underlyingParts:
               </label>
               <div class="col">
-                <input class="form-control" type="text" id="underlyingString" name="underlyingString" placeholder="ETH/USD" value="Test-Coin" />
+                <input class="form-control" type="text" id="underlyingParts" name="underlyingParts" placeholder="[&quot;ETH&quot;, &quot;USD&quot;]" value="[&quot;Test-Coin&quot;, &quot;USD&quot;]" />
               </div>
             </div>
             <div class="form-group row">
@@ -318,7 +318,7 @@ button:disabled {
                 transactionFee0: (in %)
               </label>
               <div class="col">
-                <input class="form-control" type="text" id="transactionFee0Percent" name="transactionFee0Percent" value="0.0" />
+                <input class="form-control" type="text" id="transactionFee0Percent" name="transactionFee0Percent" value="0.3" />
               </div>
             </div>
             <div class="form-group row">
@@ -336,7 +336,7 @@ button:disabled {
                 transactionFee1: (in %)
               </label>
               <div class="col">
-                <input class="form-control" type="text" id="transactionFee1Percent" name="transactionFee1Percent" value="0.0" />
+                <input class="form-control" type="text" id="transactionFee1Percent" name="transactionFee1Percent" value="0.2" />
               </div>
             </div>
             <div class="form-group row">
@@ -354,7 +354,7 @@ button:disabled {
                 transactionFeeSigner: (in %)
               </label>
               <div class="col">
-                <input class="form-control" type="text" id="transactionFeeSignerPercent" name="transactionFeeSignerPercent" value="0.0" />
+                <input class="form-control" type="text" id="transactionFeeSignerPercent" name="transactionFeeSignerPercent" value="0.1" />
               </div>
             </div>
             <div class="form-group row">
@@ -401,12 +401,12 @@ button:disabled {
               <div class="col">
 
                 <div class="form-group row">
-                  <label class="col-3-sub col col-form-label" for="underlyingString2">
+                  <label class="col-3-sub col col-form-label" for="underlyingParts2">
                     <span class="badge badge-primary" style="width: 2em;">1</span>
-                    underlyingString:
+                    underlyingParts:
                   </label>
                   <div class="col">
-                    <input class="form-control" type="text" id="underlyingString2" name="underlyingString2" placeholder="" value="" disabled />
+                    <input class="form-control" type="text" id="underlyingParts2" name="underlyingParts2" placeholder="" value="" disabled />
                   </div>
                 </div>
                 <div class="form-group row">
@@ -861,7 +861,7 @@ require(
     };
 
     var parseJsonArray = function(jsonString, typeString) {
-      /* this function always returns an array of strings */
+      /* this function always returns an array of json parsable strings */
       var array;
       try {
         array = JSON.parse(jsonString);
@@ -932,8 +932,13 @@ require(
     };
 
     var getFacts = function(){
+      var underlyingParts = parseJsonArray(document.getElementById('underlyingParts').value, 'string').map(
+        function(jsonStr){
+          return JSON.parse(jsonStr);
+        }
+      );
       return {
-        underlyingString: document.getElementById('underlyingString').value,
+        underlyingString: underlyingParts.join('\0'),
         expirationDatetime: getExpirationDatetime(),
         objectionPeriod: parseIntOrThrowError(document.getElementById('objectionPeriod').value, '"objectionPeriod" invalid'),
         config: (
@@ -961,9 +966,9 @@ require(
           signerAddr: validateAddressOrThrowError(document.getElementById('signerAddr').value, '"signerAddr" invalid'),
           feeTaker0: validateAddressOrThrowError(document.getElementById('feeTaker0').value, '"feeTaker0" invalid'),
           feeTaker1: validateAddressOrThrowError(document.getElementById('feeTaker1').value, '"feeTaker1" invalid'),
-          transactionFee0: parseFloatOrThrowError(document.getElementById('transactionFee0Percent').value, digioptionsContracts.constants.payoutPerNanoOptionExp - 2, '"transactionFee0" invalid').toString(), // input in percent (float)
-          transactionFee1: parseFloatOrThrowError(document.getElementById('transactionFee1Percent').value, digioptionsContracts.constants.payoutPerNanoOptionExp - 2, '"transactionFee1" invalid').toString(), // input in percent (float)
-          transactionFeeSigner: parseFloatOrThrowError(document.getElementById('transactionFeeSignerPercent').value, digioptionsContracts.constants.payoutPerNanoOptionExp - 2, '"transactionFeeSigner" invalid').toString() // input in percent (float)
+          transactionFee0: parseFloatOrThrowError(document.getElementById('transactionFee0Percent').value, digioptionsContracts.constants.atomicOptionPayoutWeiExp - 2, '"transactionFee0 x" invalid').toString(), // input in percent (float)
+          transactionFee1: parseFloatOrThrowError(document.getElementById('transactionFee1Percent').value, digioptionsContracts.constants.atomicOptionPayoutWeiExp - 2, '"transactionFee1" invalid').toString(), // input in percent (float)
+          transactionFeeSigner: parseFloatOrThrowError(document.getElementById('transactionFeeSignerPercent').value, digioptionsContracts.constants.atomicOptionPayoutWeiExp - 2, '"transactionFeeSigner" invalid').toString() // input in percent (float)
         }
       );
     };
@@ -1014,7 +1019,7 @@ require(
 
     // automatically update factHash
     document.querySelectorAll(
-      '#underlyingString, #expirationDatetime, #objectionPeriod, #configMarketType, #configIntervalType, #marketCategory, #ndigit, #baseUnitExp, #namedRanges'
+      '#underlyingParts, #expirationDatetime, #objectionPeriod, #configMarketType, #configIntervalType, #marketCategory, #ndigit, #baseUnitExp, #namedRanges'
     ).forEach(function(elem) {
       elem.addEventListener('input', function() {
         updateFactHash();
@@ -1024,7 +1029,7 @@ require(
     // automatically update marketHashCalculated
     document.querySelectorAll(
       '#signerAddr, ' +
-      '#underlyingString, #expirationDatetime, #objectionPeriod, #configMarketType, #configIntervalType, #marketCategory, #ndigit, #baseUnitExp, #namedRanges, ' +
+      '#underlyingParts, #expirationDatetime, #objectionPeriod, #configMarketType, #configIntervalType, #marketCategory, #ndigit, #baseUnitExp, #namedRanges, ' +
       '#marketInterval, #strikes, #transactionFee0Percent, #transactionFee1Percent, #transactionFeeSignerPercent, #feeTaker0, #feeTaker1'
     ).forEach(function(elem) {
       elem.addEventListener('input', function() {
@@ -1219,7 +1224,7 @@ require(
                 var date = new Date(0); // The 0 there is the key, which sets the date to the epoch
                 date.setUTCSeconds(marketData.marketBaseData.expirationDatetime);
 
-                setInputFormByID('underlyingString2', marketData.marketBaseData.underlyingString);
+                setInputFormByID('underlyingParts2', JSON.stringify(marketData.marketBaseData.underlyingString.split('\0')));
                 setInputFormByID('expirationDatetime2', date.toUTCString());
                 setInputFormByID('objectionPeriod2', marketData.marketBaseData.objectionPeriod);
                 setInputFormByID('configMarketType2', (marketData.marketBaseData.config & factsigner.constants.configMarketTypeIsStrikedMask)? 1 : 0);
