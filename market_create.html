@@ -2,14 +2,16 @@
 <html lang="en">
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
-    <title>Markets creation and settlement example</title>
+    <title>DigiOptions markets creation and settlement example</title>
 
     <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="icon" href="data:;base64,iVBORw0KGgo="/>
+    <link rel="stylesheet" type="text/css" href="node_modules/font-awesome/css/font-awesome.min.css">
 
     <style>
 button:disabled {
   cursor: not-allowed;
-}  
+}
 .col-3-sub {
     -ms-flex: 0 0 30%;
     flex: 0 0 30%;
@@ -19,7 +21,7 @@ button:disabled {
   </head>
   <body>
     <div class="container">
-      <h1>Markets creation and settlement example</h1>
+      <h1>DigiOptions markets creation and settlement example</h1>
 
       <div id="modal" class="modal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
@@ -42,19 +44,33 @@ button:disabled {
       </div>
 
       <p>
-        Both market creation and market settlement is a 2 stage processs. You need
+        <strong>Market creation:</strong> (two stage processs)
       </p>
       <ol>
         <li>
-          a trusted signature over the "facts" (and the final quote on settlement)
+          A signature over the "facts" must be created. This signature is typically signed by a known/trusted authority.
         </li>
         <li>
-          someone who will create the market on the blockchain.
+          The signature may then be used to the market on the blockchain. When creating the market custom fees (and strikes)
+          are applied.
         </li>
       </ol>
 
       <p>
-        With this tool you can do both.
+        <strong>Market settlement:</strong> (two stage processs)
+      </p>
+      <ol>
+        <li>
+          A trusted signature over the "facts" and the final quote. This signature <em>must</em> be created using the same
+          private key that was used for the signature for market creation.
+        </li>
+        <li>
+          The signature and the final quote must be supplied to settle the market on the blockchain.
+        </li>
+      </ol>
+
+      <p>
+        With this tool you can do both - creating signatures and triggering blockchain transactions.
       </p>
       <p>
         This online example is part of <a href="https://github.com/berlincode/digioptions-contracts-web-examples">https://github.com/berlincode/digioptions-contracts-web-examples</a>
@@ -66,7 +82,6 @@ button:disabled {
 
         <div class="form-group row">
           <label class="col-3 col-form-label" for="network">
-  <!--          <span class="badge badge-primary">1</span>-->
             network:
           </label>
           <div class="col">
@@ -77,29 +92,28 @@ button:disabled {
         <div class="form-group row">
           <div class="col-3">
             <label class="col-form-label" for="contractAddr">
-  <!--              <span class="badge badge-primary">3</span>-->
                 contractAddr (contract address):
             </label>
-  <!--          <a tabindex="0" style="padding-left: 3px; padding-right: 3px" class="text-white bg-secondary" role="button" data-toggle="popover" data-container="body" data-placement="top" data-trigger="focus" title="Dismissible popover" data-content="And here's some amazing content. It's very engaging. Right?">?</a>-->
           </div>
           <div class="input-group col">
             <input class="form-control" type="text" id="contractAddr" name="contractAddr" placeholder="0x..." value="" />
             <div class="input-group-append">
-              <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">default contracts <span class="caret"></span></button>
+              <button id="dropdownContractListBtn" type="button" class="btn btn-outline-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" disabled>default contracts <span class="caret"></span></button>
               <div class="dropdown-menu dropdown-menu-right" id="dropdownContractList">
               </div>
             </div>
           </div>
         </div>
 
-
         <div class="form-group row">
           <label class="col-3 col-form-label" for="signerPrivateKey">
-  <!--          <span class="badge badge-primary">2</span>-->
             signerPrivateKey (private!):
           </label>
           <div class="input-group col">
-            <input class="form-control" type="text" id="signerPrivateKey" name="signerPrivateKey" placeholder="" value="" />
+            <input class="form-control" type="password" id="signerPrivateKey" name="signerPrivateKey" data-toggle="password" placeholder="" value="" />
+            <div class="input-group-append">
+              <button type="button" class="btn btn-outline-secondary passwordToggle" value="1"><i class="fa fa-eye"></i></button>
+            </div>
             <div class="input-group-append">
               <button type="button" class="btn btn-outline-secondary" id="createSigningKey" name="createSigningKey" value="1" disabled>create private key</button>
             </div>
@@ -109,15 +123,17 @@ button:disabled {
         <div class="form-group row">
           <div class="offset-1 col-3">
             <label class="col-form-label" style="margin: 0; padding: 0;" for="signerAddr">
-  <!--          <span class="badge badge-primary">2</span>-->
               -&gt; signerAddr:
             </label>
             <div class="text-muted small" style="padding-left: 1em;">
               (calc. from signerPrivateKey)
             </div>
           </div>
-          <div class="input-group col">
+          <div class="input-group col" style="padding-top: 3px; padding-bottom: 3px;">
             <input class="form-control" type="text" id="signerAddr" name="signerAddr" placeholder="" value="" disabled/>
+            <div class="input-group-append">
+              <button type="button" class="btn btn-outline-secondary js-tooltip js-copy" data-toggle="tooltip" data-placement="top" data-copy="signerAddr" title="Copy to clipboard">copy</button>
+            </div>
           </div>
         </div>
 
@@ -149,17 +165,17 @@ button:disabled {
           <form class="form-horizontal">
 
             <div class="form-group row">
-              <label class="col-3 col-form-label" for="underlyingString">
-                <span class="badge badge-primary">1</span>
-                underlyingString:
+              <label class="col-3 col-form-label" for="underlyingParts">
+                <span class="badge badge-primary" style="width: 2em;">1</span>
+                underlyingParts:
               </label>
               <div class="col">
-                <input class="form-control" type="text" id="underlyingString" name="underlyingString" placeholder="ETH/USD" value="Test-Coin" />
+                <input class="form-control" type="text" id="underlyingParts" name="underlyingParts" placeholder="[&quot;ETH&quot;, &quot;USD&quot;]" value="[&quot;Test-Coin&quot;, &quot;USD&quot;]" />
               </div>
             </div>
             <div class="form-group row">
               <label class="col-3 col-form-label" for="expirationDatetime">
-                <span class="badge badge-primary">2</span>
+                <span class="badge badge-primary" style="width: 2em;">2</span>
                 expirationDatetime:
               </label>
               <div class="col">
@@ -167,17 +183,61 @@ button:disabled {
               </div>
             </div>
             <div class="form-group row">
+              <label class="col-3 col-form-label" for="objectionPeriod">
+                <span class="badge badge-primary" style="width: 2em;">3</span>
+                objectionPeriod:
+              </label>
+              <div class="col">
+                <input class="form-control" type="text" id="objectionPeriod" name="objectionPeriod" value="3600" />
+              </div>
+            </div>
+            <div class="form-group row">
+              <label class="col-3 col-form-label" for="configMarketType">
+                <span class="badge badge-primary" style="width: 2em;">4</span>
+                config.MarketType:
+              </label>
+              <div class="input-group col">
+                <select class="form-control" id="configMarketType" name="configMarketType">
+                  <option value="0">NAMED (0)</option>
+                  <option value="1" selected>STRIKED (1)</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group row">
+              <label class="col-3 col-form-label" for="configIntervalType">
+                <span class="badge badge-primary" style="width: 2em;">5</span>
+                config.IntervalType:
+              </label>
+              <div class="input-group col">
+                <select class="form-control" id="configIntervalType" name="configIntervalType">
+                  <option value="0">UNUSED (0)</option>
+                  <option value="1" selected>USED (1)</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group row">
+              <label class="col-3 col-form-label" for="marketCategory">
+                <span class="badge badge-primary" style="width: 2em;">6</span>
+                marketCategory:
+              </label>
+              <div class="input-group col">
+                <select class="form-control" id="marketCategory" name="marketCategory">
+                    <option value="" selected> -- no selection -- </option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group row">
               <label class="col-3 col-form-label" for="ndigit">
-                <span class="badge badge-primary">3</span>
+                <span class="badge badge-primary" style="width: 2em;">7</span>
                 ndigit:
               </label>
               <div class="col">
-                <input class="form-control" type="text" id="ndigit" name="ndigit" value="2" />
+                <input class="form-control" type="text" id="ndigit" name="ndigit" value="0" />
               </div>
             </div>
             <div class="form-group row">
               <label class="col-3 col-form-label" for="baseUnitExp">
-                <span class="badge badge-primary">4</span>
+                <span class="badge badge-primary" style="width: 2em;">8</span>
                 baseUnitExp:
               </label>
               <div class="col">
@@ -185,12 +245,12 @@ button:disabled {
               </div>
             </div>
             <div class="form-group row">
-              <label class="col-3 col-form-label" for="objectionPeriod">
-                <span class="badge badge-primary">5</span>
-                objectionPeriod:
+              <label class="col-3 col-form-label" for="namedRanges">
+                <span class="badge badge-primary" style="width: 2em;">9</span>
+                namedRanges:
               </label>
               <div class="col">
-                <input class="form-control" type="text" id="objectionPeriod" name="objectionPeriod" value="3600" />
+                <input class="form-control" type="text" id="namedRanges" name="namedRanges" value="[]" placeholder="[] (striked market) or e.g. [&quot;no&quot;, &quot;yes&quot;] (named market)"/>
               </div>
             </div>
 
@@ -200,10 +260,10 @@ button:disabled {
                   -&gt; factHash:
                 </label>
                 <div class="text-muted small" style="padding-left: 1em;">
-                  (calc. over <span class="badge badge-secondary">1</span>&#32;-&#32;<span class="badge badge-secondary">5</span>)
+                  (calc. over <span class="badge badge-secondary">1</span>&#32;-&#32;<span class="badge badge-secondary">9</span>)
                 </div>
               </div>
-              <div class="col input-group" style="padding-top: 3px; padding-bottom: 3px;">
+              <div class="input-group col" style="padding-top: 3px; padding-bottom: 3px;">
                 <input class="form-control" type="text" id="factHash" name="factHash" value="" disabled />
                 <div class="input-group-append">
                   <button type="button" class="btn btn-outline-secondary js-tooltip js-copy" data-toggle="tooltip" data-placement="top" data-copy="factHash" title="Copy to clipboard">copy</button>
@@ -214,11 +274,10 @@ button:disabled {
             <div class="form-group row">
               <div class="col-3">
                 <label class="col-form-label" style="margin: 0; padding: 0;" for="signatureFactHash">
-  <!--      <span class="badge badge-primary">1</span>-->
                   signatureFactHash:<br/>
                 </label><br/>
                 <div class="text-muted small" style="padding-left: 1em;">
-                  factHash (based on <span class="badge badge-secondary">1</span>&#32;-&#32;<span class="badge badge-secondary">5</span>)
+                  factHash (based on <span class="badge badge-secondary">1</span>&#32;-&#32;<span class="badge badge-secondary">9</span>)
                   signed with signerPrivateKey
                 </div>
               </div>
@@ -231,40 +290,40 @@ button:disabled {
             </div>
 
             <div class="form-group row">
-              <label class="col-3 col-form-label" for="strikes">
-                <span class="badge badge-primary">6</span>
-                typeDuration:
+              <label class="col-3 col-form-label" for="marketInterval">
+                <span class="badge badge-primary" style="width: 2em;">10</span>
+                marketInterval:
               </label>
               <div class="input-group col">
-                <select class="form-control" id="typeDuration" name="typeDuration">
+                <select class="form-control" id="marketInterval" name="marketInterval">
                     <option value="" selected> -- no selection -- </option>
                 </select>
                 <div class="input-group-append">
-                  <button type="button" class="btn btn-outline-secondary" id="calcTypeDuration" name="calcTypeDuration" value="1" disabled>calc typeDuration</button>
+                  <button type="button" class="btn btn-outline-secondary" id="calcMarketInterval" name="calcMarketInterval" value="1" disabled>calc marketInterval</button>
                 </div>
               </div>
             </div>
             <div class="form-group row">
               <label class="col-3 col-form-label" for="strikes">
-                <span class="badge badge-primary">7</span>
+                <span class="badge badge-primary" style="width: 2em;">11</span>
                 strikes:
               </label>
               <div class="col">
-                <input class="form-control" type="text" id="strikes" name="strikes" placeholder="10.0, 11.0" value="996.0, 1000.0, 1004.0, 1008.0" />
+                <input class="form-control" type="text" id="strikes" name="strikes" placeholder="[10.0, 11.0]" value="[996.0, 1000.0, 1004.0, 1008.0]" />
               </div>
             </div>
             <div class="form-group row">
-              <label class="col-3 col-form-label" for="transactionFeePercent0">
-                <span class="badge badge-primary">8</span>
-                transactionFee0: (in percent)
+              <label class="col-3 col-form-label" for="transactionFee0Percent">
+                <span class="badge badge-primary" style="width: 2em;">12</span>
+                transactionFee0: (in %)
               </label>
               <div class="col">
-                <input class="form-control" type="text" id="transactionFeePercent0" name="transactionFeePercent0" value="0.0" />
+                <input class="form-control" type="text" id="transactionFee0Percent" name="transactionFee0Percent" value="0.3" />
               </div>
             </div>
             <div class="form-group row">
               <label class="col-3 col-form-label" for="feeTaker0">
-                <span class="badge badge-primary">9</span>
+                <span class="badge badge-primary" style="width: 2em;">13</span>
                 feeTaker0: (address)
               </label>
               <div class="col">
@@ -272,17 +331,17 @@ button:disabled {
               </div>
             </div>
             <div class="form-group row">
-              <label class="col-3 col-form-label" for="transactionFeePercent1">
-                <span class="badge badge-primary">10</span>
-                transactionFee1: (in percent)
+              <label class="col-3 col-form-label" for="transactionFee1Percent">
+                <span class="badge badge-primary" style="width: 2em;">14</span>
+                transactionFee1: (in %)
               </label>
               <div class="col">
-                <input class="form-control" type="text" id="transactionFeePercent1" name="transactionFeePercent1" value="0.0" />
+                <input class="form-control" type="text" id="transactionFee1Percent" name="transactionFee1Percent" value="0.2" />
               </div>
             </div>
             <div class="form-group row">
               <label class="col-3 col-form-label" for="feeTaker1">
-                <span class="badge badge-primary">11</span>
+                <span class="badge badge-primary" style="width: 2em;">15</span>
                 feeTaker1: (address)
               </label>
               <div class="col">
@@ -290,18 +349,27 @@ button:disabled {
               </div>
             </div>
             <div class="form-group row">
+              <label class="col-3 col-form-label" for="transactionFeeSignerPercent">
+                <span class="badge badge-primary" style="width: 2em;">16</span>
+                transactionFeeSigner: (in %)
+              </label>
+              <div class="col">
+                <input class="form-control" type="text" id="transactionFeeSignerPercent" name="transactionFeeSignerPercent" value="0.1" />
+              </div>
+            </div>
+            <div class="form-group row">
               <div class="offset-1 col-3">
-                <label class="col-form-label" style="margin: 0; padding: 0;" for="marketHash">
+                <label class="col-form-label" style="margin: 0; padding: 0;" for="marketHashCalculated">
                   -&gt; marketHash:
                 </label><br/>
                 <div class="text-muted small" style="padding-left: 1em;">
-                  (calc. over <span class="badge badge-secondary">1</span>&#32;-&#32;<span class="badge badge-secondary">11</span> + signerAddr)
+                  (calc. over <span class="badge badge-secondary">1</span>&#32;-&#32;<span class="badge badge-secondary">16</span> + signerAddr)
                 </div>
               </div>
-              <div class="col input-group" style="padding-top: 3px; padding-bottom: 3px;">
-                <input class="form-control" type="text" id="marketHash" name="marketHash" value="" disabled />
+              <div class="input-group col" style="padding-top: 3px; padding-bottom: 3px;">
+                <input class="form-control" type="text" id="marketHashCalculated" name="marketHashCalculated" value="" disabled />
                 <div class="input-group-append">
-                  <button type="button" class="btn btn-outline-secondary js-tooltip js-copy" data-toggle="tooltip" data-placement="top" data-copy="marketHash" title="Copy to clipboard">copy</button>
+                  <button type="button" class="btn btn-outline-secondary js-tooltip js-copy" data-toggle="tooltip" data-placement="top" data-copy="marketHashCalculated" title="Copy to clipboard">copy</button>
                 </div>
               </div>
             </div>
@@ -321,12 +389,11 @@ button:disabled {
           <form class="form-horizontal">
 
             <div class="form-group row">
-              <label class="col-3 col-form-label" for="marketHash2">
-        <!--            <span class="badge badge-primary">2</span>-->
+              <label class="col-3 col-form-label" for="marketHash">
                 marketHash:
               </label>
               <div class="col">
-                <input class="form-control" type="text" id="marketHash2" name="marketHash2" value="" />
+                <input class="form-control" type="text" id="marketHash" name="marketHash" value="" />
               </div>
             </div>
 
@@ -334,48 +401,94 @@ button:disabled {
               <div class="col">
 
                 <div class="form-group row">
-                  <label class="col-3-sub col col-form-label" for="underlyingString2">
-                    <span class="badge badge-primary">1</span>
-                    underlyingString:
+                  <label class="col-3-sub col col-form-label" for="underlyingParts2">
+                    <span class="badge badge-primary" style="width: 2em;">1</span>
+                    underlyingParts:
                   </label>
                   <div class="col">
-                    <input class="form-control" type="text" id="underlyingString2" name="underlyingString2" placeholder="" value="" disabled />
+                    <input class="form-control" type="text" id="underlyingParts2" name="underlyingParts2" placeholder="" value="" disabled />
                   </div>
                 </div>
                 <div class="form-group row">
                   <label class="col-3-sub col col-form-label" for="expirationDatetime2">
-                      <span class="badge badge-primary">2</span>
-                      expirationDatetime:
+                    <span class="badge badge-primary" style="width: 2em;">2</span>
+                    expirationDatetime:
                   </label>
                   <div class="col">
-                      <input class="form-control" type="text" id="expirationDatetime2" name="expirationDatetime2" value="" disabled />
-                  </div>
-                </div>
-                <div class="form-group row">
-                  <label class="col-3-sub col col-form-label" for="ndigit2">
-                      <span class="badge badge-primary">3</span>
-                      ndigit:
-                  </label>
-                  <div class="col">
-                      <input class="form-control" type="text" id="ndigit2" name="ndigit2" value="" disabled />
-                  </div>
-                </div>
-                <div class="form-group row">
-                  <label class="col-3-sub col col-form-label" for="baseUnitExp2">
-                      <span class="badge badge-primary">4</span>
-                      baseUnitExp:
-                  </label>
-                  <div class="col">
-                      <input class="form-control" type="text" id="baseUnitExp2" name="baseUnitExp2" value="" disabled />
+                    <input class="form-control" type="text" id="expirationDatetime2" name="expirationDatetime2" value="" disabled />
                   </div>
                 </div>
                 <div class="form-group row">
                   <label class="col-3-sub col col-form-label" for="objectionPeriod2">
-                      <span class="badge badge-primary">5</span>
+                      <span class="badge badge-primary" style="width: 2em;">3</span>
                       objectionPeriod:
                   </label>
                   <div class="col">
-                      <input class="form-control" type="text" id="objectionPeriod2" name="objectionPeriod2" value="" disabled />
+                    <input class="form-control" type="text" id="objectionPeriod2" name="objectionPeriod2" value="" disabled />
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label class="col-3-sub col col-form-label" for="configMarketType2">
+                    <span class="badge badge-primary" style="width: 2em;">4</span>
+                    config.MarketType:
+                  </label>
+                  <div class="input-group col">
+                    <select class="form-control" id="configMarketType2" name="configMarketType2" disabled>
+                      <option value="" selected> -- no selection -- </option>
+                      <option value="0">NAMED (0)</option>
+                      <option value="1">STRIKED (1)</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label class="col-3-sub col col-form-label" for="configIntervalType2">
+                    <span class="badge badge-primary" style="width: 2em;">5</span>
+                    config.IntervalType:
+                  </label>
+                  <div class="input-group col">
+                    <select class="form-control" id="configIntervalType2" name="configIntervalType2" disabled>
+                      <option value="" selected> -- no selection -- </option>
+                      <option value="0">UNUSED (0)</option>
+                      <option value="1">USED (1)</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label class="col-3-sub col col-form-label" for="marketCategory2">
+                    <span class="badge badge-primary" style="width: 2em;">6</span>
+                    marketCategory:
+                  </label>
+                  <div class="input-group col">
+                    <select class="form-control" id="marketCategory2" name="marketCategory2" disabled>
+                        <option value="" selected> -- no selection -- </option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label class="col-3-sub col col-form-label" for="ndigit2">
+                    <span class="badge badge-primary" style="width: 2em;">7</span>
+                    ndigit:
+                  </label>
+                  <div class="col">
+                    <input class="form-control" type="text" id="ndigit2" name="ndigit2" value="" disabled />
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label class="col-3-sub col col-form-label" for="baseUnitExp2">
+                    <span class="badge badge-primary" style="width: 2em;">8</span>
+                    baseUnitExp:
+                  </label>
+                  <div class="col">
+                    <input class="form-control" type="text" id="baseUnitExp2" name="baseUnitExp2" value="" disabled />
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label class="col-3-sub col col-form-label" for="namedRanges2">
+                    <span class="badge badge-primary" style="width: 2em;">9</span>
+                    namedRanges:
+                  </label>
+                  <div class="col">
+                    <input class="form-control" type="text" id="namedRanges2" name="namedRanges2" value="" disabled />
                   </div>
                 </div>
               </div>
@@ -391,38 +504,35 @@ button:disabled {
                   -&gt; factHash:
                 </label>
                 <div class="text-muted small" style="padding-left: 1em;">
-                  (calc. over <span class="badge badge-secondary">1</span>&#32;-&#32;<span class="badge badge-secondary">5</span>)
+                  (calc. over <span class="badge badge-secondary">1</span>&#32;-&#32;<span class="badge badge-secondary">9</span>)
                 </div>
               </div>
-              <div class="col input-group" style="padding-top: 3px; padding-bottom: 3px;">
+              <div class="input-group col" style="padding-top: 3px; padding-bottom: 3px;">
                 <input class="form-control" type="text" id="factHash2" name="factHash2" value="" disabled />
                 <div class="input-group-append">
                   <button type="button" class="btn btn-outline-secondary js-tooltip js-copy" data-toggle="tooltip" data-placement="top" data-copy="factHash2" title="Copy to clipboard">copy</button>
                 </div>
               </div>
             </div>
-      
+
             <div class="form-group row">
               <label class="col-3 col-form-label" for="finalValue">
-  <!--      <span class="badge badge-primary">12</span>-->
                 finalValue:
               </label>
               <div class="col">
-                <input class="form-control" type="text" id="finalValue" name="finalValue" value="" placeholder="e.g. 1.234" />
+                <input class="form-control" type="text" id="finalValue" name="finalValue" value="" placeholder="e.g. 1.234 or &quot;yes&quot;" />
               </div>
             </div>
-      
+
             <div class="form-group row">
               <div class="col-3">
                 <label class="col-form-label" style="margin: 0; padding: 0;" for="signatureFinal">
-  <!--    <span class="badge badge-primary">1</span>-->
                   signatureFinal:
                 </label><br/>
                 <div class="text-muted small" style="padding-left: 1em;">
                   factHash
-                  (based on <span class="badge badge-secondary">1</span>&#32;-&#32;<span class="badge badge-secondary">5</span>)
+                  (based on <span class="badge badge-secondary">1</span>&#32;-&#32;<span class="badge badge-secondary">9</span>)
                   + finalValue
-  <!--(<span class="badge badge-secondary">12</span>) -->
                 signed with signerPrivateKey
                 </div>
               </div>
@@ -448,64 +558,6 @@ button:disabled {
 
 /* reload page on hash change */
 window.addEventListener('hashchange', function(){location.reload();}, false);
-
-window.setInputFormByID = function(id, value, disable /* optional */){
-  var elm = document.getElementById(id);
-  if (elm){
-    elm.value = value;
-    if (typeof(disable) !== 'undefined'){
-      if (disable) {
-        elm.setAttribute('disabled', true);
-      } else {
-        elm.removeAttribute('disabled');
-      }
-    }
-    // trigger all functions listeninf for 'input' event
-    elm.dispatchEvent(new Event('input', {}));
-  }
-};
-
-window.parameters = (function(){
-  // parse browser's hash/query-string append parameters and try to fill out form input values 
-  // e.g. .../market_create.html#?contractAddr=0x0Eb7e02ED6C8a55f72551E8677eE3bbB25263016&signerPrivateKey=0x728c08b6404f3da74525183e0cf444483352e8f13a48ee40ece9185306ec7419
-  var query = window.location.hash.replace(/^#?\??/, '');
-  var vars = query.split('&');
-  var params = [];
-  for (var i = 0; i < vars.length; i++) {
-    var pair = vars[i].split('=');
-    if (pair.length === 2){
-      var key = decodeURIComponent(pair[0]);
-      var value = decodeURIComponent(pair[1].replace(/\+/g, '%20'));
-      params[key] = value;
-      window.setInputFormByID(key, value, true);
-    }
-  }
-  return params;
-})();
-
-var date;
-if (window.parameters.settlementDatetime){
-  date = new Date(0); // The 0 there is the key, which sets the date to the epoch
-  date.setUTCSeconds(parseInt(window.parameters.settlementDatetime));
-  window.setInputFormByID('expirationDatetime', date.toUTCString(), true);
-}else {
-  date = new Date();
-  date.setTime(Math.floor((date.getTime() + (10* 60*60*1000)) / (60*60*1000)) * 60*60*1000);
-  window.setInputFormByID('expirationDatetime', date.toUTCString());
-}
-
-if ((window.parameters.signatureFactHash) || (window.parameters.signatureFinal)){
-  window.setInputFormByID('signerPrivateKey', ' - not required - (signature present)', true);
-}
-if (window.parameters.signatureFinal){
-  document.getElementById('marketSettle-tab').classList.add('active');
-  document.getElementById('marketSettle').classList.add('active');
-  document.getElementById('marketSettle').classList.add('show');
-}else{
-  document.getElementById('marketCreate-tab').classList.add('active');
-  document.getElementById('marketCreate').classList.add('active');
-  document.getElementById('marketCreate').classList.add('show');
-}
 
     </script>
 
@@ -545,7 +597,6 @@ function copyToClipboard(text, el) {
   }
 }
 
-
 // Tooltips / Requires Bootstrap for functionality
 $('.js-tooltip').tooltip();
 
@@ -553,6 +604,23 @@ $('.js-copy').click(function() {
   var text = document.getElementById($(this).attr('data-copy')).value;
   var el = $(this);
   copyToClipboard(text, el);
+});
+
+$('[data-toggle="password"]').each(function(){
+  var b = $(this);
+  var c = $(this).parent().find('.passwordToggle');
+  c.addClass('input-password-hide');
+  c.on('click', function(){
+    if (c.hasClass('input-password-hide')){
+      c.removeClass('input-password-hide').addClass('input-password-show');
+      c.find('.fa').removeClass('fa-eye').addClass('fa-eye-slash');
+      b.attr('type', 'text');
+    } else {
+      c.removeClass('input-password-show').addClass('input-password-hide');
+      c.find('.fa').removeClass('fa-eye-slash').addClass('fa-eye');
+      b.attr('type', 'password');
+    }
+  });
 });
 
 // initialize all popover infos
@@ -576,7 +644,9 @@ var modal_success = function(str){
 
 require.config({
   paths: {
-    'web3': 'assets/js/web3.min'
+    'web3': 'assets/js/web3.min',
+    'web3-utils': 'assets/js/web3-utils.min',
+    'eth-lib-account': 'assets/js/eth-lib-account.min'
   },
   packages: [
     {
@@ -611,29 +681,145 @@ require(
   ],
   function(Web3, factsigner, digioptionsContracts, digioptionsTools){
 
-    var web3 = new Web3(window.ethereum);
+    var setInputFormByID = function(id, value, disable /* optional */){
+      var elm = document.getElementById(id);
+      if (elm){
+        elm.value = value;
+        if (typeof(disable) !== 'undefined'){
+          if (disable) {
+            elm.setAttribute('disabled', true);
+          } else {
+            elm.removeAttribute('disabled');
+          }
+        }
+        // trigger all functions listeninf for 'input' event
+        elm.dispatchEvent(new Event('input', {}));
+      }
+    };
 
-    /* fill typeDuration select field with all possible options */
-    for (var typeDuration in digioptionsContracts.constants.typeDuration){
-      var typeDurationString = digioptionsContracts.constants.typeDuration[typeDuration];
-      var option = document.createElement('option');
-      option.text = typeDuration + ' (' + typeDurationString + ')';
-      option.value = typeDuration;
-      document.getElementById('typeDuration').add(option); 
+    var option;
+    /* fill marketCategory/marketCategory2 select field with all possible options */
+    for (var marketCategoryString in factsigner.constants.marketCategory){
+      var marketCategory = factsigner.constants.marketCategory[marketCategoryString];
+
+      option = document.createElement('option');
+      option.text = marketCategoryString + ' (' + marketCategory + ')';
+      option.value = marketCategory;
+      document.getElementById('marketCategory').add(option);
+
+      option = document.createElement('option');
+      option.text = marketCategoryString + ' (' + marketCategory + ')';
+      option.value = marketCategory;
+      document.getElementById('marketCategory2').add(option);
     }
+
+    /* fill marketInterval select field with all possible options */
+    for (var marketIntervalString in factsigner.constants.marketInterval){
+      var marketInterval = factsigner.constants.marketInterval[marketIntervalString];
+
+      option = document.createElement('option');
+      option.text = marketIntervalString + ' (' + marketInterval + ')';
+      option.value = marketInterval;
+      document.getElementById('marketInterval').add(option);
+    }
+
+    var parameters = (function(){
+      // parse browser's hash/query-string append parameters and try to fill out form input values
+      // e.g.
+      //  .../market_create.html#?contractAddr=0x0Eb7e02ED6C8a55f72551E8677eE3bbB25263016&signerPrivateKey=0x728c08b6404f3da74525183e0cf444483352e8f13a48ee40ece9185306ec7419
+      //  .../market_create.html#?ethProvider=ws%3A%2F%2F192.168.2.116%3A12345
+
+      var query = window.location.hash.replace(/^#?\??/, '');
+      var vars = query.split('&'); // TODO amp?
+      var params = [];
+      for (var i = 0; i < vars.length; i++) {
+        var pair = vars[i].split('=');
+        if (pair.length === 2){
+          var key = decodeURIComponent(pair[0]);
+          var value = decodeURIComponent(pair[1].replace(/\+/g, '%20'));
+          params[key] = value;
+          if (key == 'config'){
+            setInputFormByID('configMarketType', (value & factsigner.constants.configMarketType.STRIKED) > 0? '1': '0', true);
+            setInputFormByID('configIntervalType', (value & factsigner.constants.configIntervalType.USED) > 0? '1': '0', true);
+          } else {
+            setInputFormByID(key, value, true);
+          }
+        }
+      }
+      return params;
+    })();
+
+    var date;
+    if (parameters.settlementDatetime){
+      date = new Date(0); // The 0 there is the key, which sets the date to the epoch
+      date.setUTCSeconds(parseInt(parameters.settlementDatetime));
+      setInputFormByID('expirationDatetime', date.toUTCString(), true);
+    }else {
+      date = new Date();
+      date.setTime(Math.floor((date.getTime() + (10* 60*60*1000)) / (60*60*1000)) * 60*60*1000);
+      setInputFormByID('expirationDatetime', date.toUTCString());
+    }
+
+    if ((parameters.signatureFactHash) || (parameters.signatureFinal)){
+      setInputFormByID('signerPrivateKey', ' - not required - (signature present)', true);
+    }
+    if (parameters.marketHash || parameters.signatureFinal){
+      document.getElementById('marketSettle-tab').classList.add('active');
+      document.getElementById('marketSettle').classList.add('active');
+      document.getElementById('marketSettle').classList.add('show');
+    }else{
+      document.getElementById('marketCreate-tab').classList.add('active');
+      document.getElementById('marketCreate').classList.add('active');
+      document.getElementById('marketCreate').classList.add('show');
+    }
+
+
+    var web3;
+    var web3enable;
+    var addrZero = '0x0000000000000000000000000000000000000000';
+
+    if (parameters.ethProvider){
+      web3 = new Web3(parameters.ethProvider);
+      //web3enable = Promise.resolve();
+      web3enable = web3.eth.net.getNetworkType() // dummy promise
+        .catch(function(err){
+          throw new Error('failed to connect to ' + parameters.ethProvider);
+        });
+      if (parameters.privateKey){
+        web3.eth.accounts.wallet.add(parameters.privateKey);
+      }
+    }
+    else if (window.ethereum){
+      web3 = new Web3(window.ethereum);
+
+      window.ethereum.autoRefreshOnNetworkChange = false;
+      window.ethereum.on('networkChanged', function () {
+        location.reload();
+      });
+
+      web3enable = window.ethereum.enable()
+        .catch(function(err){
+          throw new Error('failed to connect to ethereum provider');
+        });
+    } else {
+      modal_error('No web3 ethereum provider (i.e. metamask) found!');
+      return;
+    }
+
+    console.log('Found provider or window.ethereum instance.');
 
     var getAccountSign = function(){
       try {
         return web3.eth.accounts.privateKeyToAccount(document.getElementById('signerPrivateKey').value);
       } catch (err){
         throw new Error('"signerPrivateKey" invalid');
-      } 
+      }
     };
 
     var getContractAddr = function(){
       var contractAddr = document.getElementById('contractAddr').value;
       if (! web3.utils.isAddress(contractAddr)){
-        throw new Error('Invalid contractAddr "' + contractAddr + '" !');
+        throw new Error('invalid "contractAddr"');
       }
       return contractAddr;
     };
@@ -648,14 +834,24 @@ require(
     };
 
     var parseFloatOrThrowError = function(floatStr, baseUnitExp, error){
-      var floatBn;
       try {
         floatStr = floatStr.replace(/^\s+|\s+$/g, ''); // strip whitespace
-        floatBn = factsigner.parseFloatToBn(floatStr, baseUnitExp);
+        return factsigner.parseFloatToBn(floatStr, baseUnitExp);
       } catch (err){
         throw new Error(error);
       }
-      return floatBn;
+    };
+
+    var parseJsonString = function(jsonStr, error){
+      try {
+        jsonStr = jsonStr.replace(/^\s+|\s+$/g, ''); // strip whitespace
+        var str = JSON.parse(jsonStr);
+        if (typeof(str) !== 'string')
+          throw new Error(error);
+        return str;
+      } catch (err){
+        throw new Error(error);
+      }
     };
 
     var validateAddressOrThrowError = function(addr, error){
@@ -664,80 +860,148 @@ require(
       return addr;
     };
 
+    var parseJsonArray = function(jsonString, typeString) {
+      /* this function always returns an array of json parsable strings */
+      var array;
+      try {
+        array = JSON.parse(jsonString);
+      } catch (err){
+        throw new Error('not valid json');
+      }
+
+      if (! Array.isArray(array)){
+        throw new Error('not an array');
+      }
+
+      if (array.some(function(val){return typeof(val) !== typeString;})){
+        throw new Error('array element of invalid type');
+      }
+
+      // remove brackets (and white spaces)
+      jsonString = jsonString.replace(/^\s*\[\s*/, '').replace(/\s*\]\s*$/, '');
+
+      if (jsonString === '')
+        return [];
+
+      return jsonString.split(',').map(
+        function(floatStr){
+          return floatStr.replace(/^\s+|\s+$/g, ''); // strip whitespace
+        }
+      );
+    };
+
     var getBaseUnitExp = function(){return parseIntOrThrowError(document.getElementById('baseUnitExp').value, '"baseUnitExp" invalid');};
+    var getExpirationDatetime = function(){return (new Date(document.getElementById('expirationDatetime').value)).getTime()/1000;};
+    var getIntervalTypeUsed = function(){return Boolean(parseIntOrThrowError(document.getElementById('configIntervalType').value, '"configIntervalType" invalid'));};
+
+    var getNamedRanges = function(){
+      try {
+        return parseJsonArray(document.getElementById('namedRanges').value, 'string').map(
+          function(jsonStr){
+            return factsigner.stringToNamedRange(JSON.parse(jsonStr));
+          }
+        );
+      } catch (err){
+        throw new Error('"namedRanges" must be an (json) array of strings');
+      }
+    };
+
+    var getStrikesOrNamedRangesAsNamedRanges = function(){
+      try {
+        return parseJsonArray(document.getElementById('strikes').value, 'string').map(
+          function(jsonStr){
+            return factsigner.stringToNamedRange(JSON.parse(jsonStr));
+          }
+        );
+      } catch (err){
+        throw new Error('"strikes" must be an (json) array of strings for named markets');
+      }
+    };
+
+    var getStrikesOrNamedRangesAsStrikes = function(){
+      var baseUnitExp = getBaseUnitExp(); // TODO wrong error
+      try {
+        return parseJsonArray(document.getElementById('strikes').value, 'number').map(
+          function(floatStr){
+            return factsigner.parseFloatToBn(floatStr, baseUnitExp).toString();
+          }
+        );
+      } catch (err){
+        throw new Error('"strikes" must be an array of floats for striked markets');
+      }
+    };
 
     var getFacts = function(){
-      var underlying;
-      try {
-        underlying = factsigner.stringToHex(document.getElementById('underlyingString').value); // TODO name vs underlying
-      } catch (err){
-        throw new Error('"underlyingString" invalid (e.g. too long)');
-      }
+      var underlyingParts = parseJsonArray(document.getElementById('underlyingParts').value, 'string').map(
+        function(jsonStr){
+          return JSON.parse(jsonStr);
+        }
+      );
       return {
-        underlying: underlying,
+        underlyingString: underlyingParts.join('\0'),
+        expirationDatetime: getExpirationDatetime(),
+        objectionPeriod: parseIntOrThrowError(document.getElementById('objectionPeriod').value, '"objectionPeriod" invalid'),
+        config: (
+          parseIntOrThrowError(document.getElementById('configMarketType').value, '"configMarketType" invalid') * factsigner.constants.configMarketTypeIsStrikedMask +
+          parseIntOrThrowError(document.getElementById('configIntervalType').value, '"configIntervalType" invalid') * factsigner.constants.configIntervalTypeIsUsedMask
+        ),
+        marketCategory: parseIntOrThrowError(document.getElementById('marketCategory').value, '"marketCategory" invalid'),
         baseUnitExp: getBaseUnitExp(),
         ndigit: parseIntOrThrowError(document.getElementById('ndigit').value, '"ndigit" invalid'),
-        objectionPeriod: parseIntOrThrowError(document.getElementById('objectionPeriod').value, '"objectionPeriod" invalid'),
-        expirationDatetime: (new Date(document.getElementById('expirationDatetime').value)).getTime()/1000
+        namedRanges: getNamedRanges()
       };
     };
 
-    var getStrikes = function(){
-      try {
-        var baseUnitExp = getBaseUnitExp(); 
-        var strikes = document.getElementById('strikes').value.split(',').map(
-          function(floatStr){
-            floatStr = floatStr.replace(/^\s+|\s+$/g, ''); // strip whitespace
-            var float = factsigner.parseFloatToBn(floatStr, baseUnitExp);
-            return float.toString();
-          }
-        );
-        return strikes;
-      } catch (err){
-        throw new Error('"strikes" invalid');
-      }
-    };
-
     var getMarketBaseData = function(){
+      var facts = getFacts();
+
+      // first validate facts
+      factsigner.validateDataForFactHash(facts);
+
       return Object.assign(
         getFacts(),
         {
-          strikes: getStrikes(),
-          typeDuration: parseIntOrThrowError(document.getElementById('typeDuration').value, '"typeDuration" invalid'),
+          strikes: (facts.config & factsigner.constants.configMarketTypeIsStrikedMask)? getStrikesOrNamedRangesAsStrikes() : getStrikesOrNamedRangesAsNamedRanges(),
+          marketInterval: parseIntOrThrowError(document.getElementById('marketInterval').value, '"marketInterval" invalid'),
           signerAddr: validateAddressOrThrowError(document.getElementById('signerAddr').value, '"signerAddr" invalid'),
           feeTaker0: validateAddressOrThrowError(document.getElementById('feeTaker0').value, '"feeTaker0" invalid'),
           feeTaker1: validateAddressOrThrowError(document.getElementById('feeTaker1').value, '"feeTaker1" invalid'),
-          // TODO 16 !!! based on baseUnitExp?
-          transactionFee0: parseFloatOrThrowError(document.getElementById('transactionFeePercent0').value, 16, '"transactionFee0" invalid').toString(), // input in percent (float)
-          transactionFee1: parseFloatOrThrowError(document.getElementById('transactionFeePercent1').value, 16, '"transactionFee1" invalid').toString() // input in percent (float)
+          transactionFee0: parseFloatOrThrowError(document.getElementById('transactionFee0Percent').value, digioptionsContracts.constants.atomicOptionPayoutWeiExp - 2, '"transactionFee0 x" invalid').toString(), // input in percent (float)
+          transactionFee1: parseFloatOrThrowError(document.getElementById('transactionFee1Percent').value, digioptionsContracts.constants.atomicOptionPayoutWeiExp - 2, '"transactionFee1" invalid').toString(), // input in percent (float)
+          transactionFeeSigner: parseFloatOrThrowError(document.getElementById('transactionFeeSignerPercent').value, digioptionsContracts.constants.atomicOptionPayoutWeiExp - 2, '"transactionFeeSigner" invalid').toString() // input in percent (float)
         }
       );
     };
 
     var updateSignerAddress = function(){
-      if ((window.parameters.signatureFactHash) || (window.parameters.signatureFinal))
+      if ((parameters.signatureFactHash) || (parameters.signatureFinal))
         return;
 
       try{
-        window.setInputFormByID('signerAddr', getAccountSign().address);
+        setInputFormByID('signerAddr', getAccountSign().address);
       } catch (err){
-        window.setInputFormByID('signerAddr', err);
+        setInputFormByID('signerAddr', err);
       }
     };
 
     var updateFactHash = function(){
+      /* clear signatureFactHash if factHash has changed */
+      if (!(parameters.signatureFactHash)){
+        setInputFormByID('signatureFactHash', '', false);
+      }
+
       try{
-        window.setInputFormByID('factHash', factsigner.factHash(getFacts()));
+        setInputFormByID('factHash', factsigner.factHash(getFacts()));
       } catch (err){
-        window.setInputFormByID('factHash', err);
+        setInputFormByID('factHash', err);
       }
     };
 
-    var updateMarketHash = function(){
+    var updateMarketHashCalculated = function(){
       try{
-        window.setInputFormByID('marketHash', digioptionsContracts.marketHash(getMarketBaseData()));
+        setInputFormByID('marketHashCalculated', digioptionsContracts.marketHash(getMarketBaseData()));
       } catch (err){
-        window.setInputFormByID('marketHash', err);
+        setInputFormByID('marketHashCalculated', err);
       }
     };
 
@@ -746,56 +1010,56 @@ require(
       '#signerPrivateKey'
     ).forEach(function(elem) {
       elem.addEventListener('input', function() {
+        /* clear signatureFactHash if signerAddr has changed */
+        setInputFormByID('signatureFactHash', '', false);
+
         updateSignerAddress();
       });
     });
 
     // automatically update factHash
     document.querySelectorAll(
-      '#underlyingString, #expirationDatetime, #ndigit, #baseUnitExp, #objectionPeriod'
+      '#underlyingParts, #expirationDatetime, #objectionPeriod, #configMarketType, #configIntervalType, #marketCategory, #ndigit, #baseUnitExp, #namedRanges'
     ).forEach(function(elem) {
       elem.addEventListener('input', function() {
         updateFactHash();
       });
     });
 
-    // automatically update marketHash
+    // automatically update marketHashCalculated
     document.querySelectorAll(
       '#signerAddr, ' +
-      '#underlyingString, #expirationDatetime, #ndigit, #baseUnitExp, #objectionPeriod, ' +
-      '#typeDuration, #strikes, #transactionFeePercent0, #transactionFeePercent1, #feeTaker0, #feeTaker1'
+      '#underlyingParts, #expirationDatetime, #objectionPeriod, #configMarketType, #configIntervalType, #marketCategory, #ndigit, #baseUnitExp, #namedRanges, ' +
+      '#marketInterval, #strikes, #transactionFee0Percent, #transactionFee1Percent, #transactionFeeSignerPercent, #feeTaker0, #feeTaker1'
     ).forEach(function(elem) {
       elem.addEventListener('input', function() {
-        updateMarketHash();
+        updateMarketHashCalculated();
       });
     });
 
-    // set initial factHash/marketHash
+    document.querySelectorAll(
+      '#finalValue'
+    ).forEach(function(elem) {
+      elem.addEventListener('input', function() {
+        /* clear signatureFinal */
+        setInputFormByID('signatureFinal', '', false);
+      });
+    });
+
+    // set initial factHash/marketHashCalculated
     updateSignerAddress();
     updateFactHash();
-    updateMarketHash();
+    updateMarketHashCalculated();
 
     var dataNetworks = digioptionsTools.dataNetworks;
 
-    if (! window.ethereum){
-      modal_error('No web3 provider (i.e. metamask) found!');
-      return;
-    }
-
-    console.log('Found web3 instance.');
-
-    window.ethereum.autoRefreshOnNetworkChange = false;
-    window.ethereum.on('networkChanged', function () {
-      location.reload();
-    });
-
-    window.ethereum.enable()
+    web3enable
       .then(function(){
         return web3.eth.net.getNetworkType();
       })
       .then(function(network){
         var dataNetwork = dataNetworks[network];
-        window.setInputFormByID('network', network + (dataNetwork && dataNetwork.testnet ? ' (testnet)' : ''));
+        setInputFormByID('network', network + (dataNetwork && dataNetwork.testnet ? ' (testnet)' : ''));
 
         if ((! dataNetwork) || (! dataNetwork.contractDescriptions)){
           var header = document.createElement('h6');
@@ -806,24 +1070,32 @@ require(
 
           var contracts = {};
           for (var contractDescriptionIdx in dataNetwork.contractDescriptions){
-            var addr = dataNetwork.contractDescriptions[contractDescriptionIdx].addr;
+            var contractAddr = dataNetwork.contractDescriptions[contractDescriptionIdx].addr;
             var contract = new web3.eth.Contract(
               digioptionsContracts.digioptionsMarketsAbi(),
-              addr
+              contractAddr
             );
 
             // TODO set one contract as default ?
             contract.methods.getContractInfo().call()
               .then(function(contractInfo){
-                var marketsAddr = contractInfo && contractInfo.digiOptionsMarketsAddr;
+                if (! contractInfo){
+                  throw new Error('reading contract info/version failed');
+                }
+                var contractDescription = digioptionsContracts.contractInfoToContractDescription(
+                  web3,
+                  contractAddr,
+                  contractInfo
+                );
+                var marketsAddr = contractDescription.digiOptionsMarketsAddr;
                 if (marketsAddr && (!contracts[marketsAddr])){
-                  contracts[contractInfo.digiOptionsMarketsAddr] = true; // add each addr only once
+                  contracts[marketsAddr] = true; // add each addr only once
 
                   var anchor = document.createElement('a');
                   anchor.setAttribute('href', '#');
                   anchor.onclick = function(evt){
                     evt.preventDefault();
-                    window.setInputFormByID('contractAddr', marketsAddr);
+                    setInputFormByID('contractAddr', marketsAddr);
                   };
                   anchor.textContent = marketsAddr;
                   anchor.setAttribute('class', 'dropdown-item');
@@ -840,28 +1112,37 @@ require(
 
         document.getElementById('createSigningKey').onclick = function(evt){
           evt.preventDefault();
-          window.setInputFormByID('signerPrivateKey', web3.eth.accounts.create().privateKey);
+          setInputFormByID('signerPrivateKey', web3.eth.accounts.create().privateKey);
         };
 
-        document.getElementById('calcTypeDuration').onclick = function(evt){
+        document.getElementById('calcMarketInterval').onclick = function(evt){
           evt.preventDefault();
-          console.log('calcTypeDuration');
+          if (! getIntervalTypeUsed()){
+            setInputFormByID('marketInterval', factsigner.constants.marketInterval.NONE);
+            return;
+          }
           try {
             var marketsContract = new web3.eth.Contract(
               digioptionsContracts.digioptionsMarketsAbi(),
               getContractAddr()
             );
-            marketsContract.methods.calcTypeDuration(getFacts().expirationDatetime).call()
-              .then(function(typeDuration){
-                if (typeDuration === null)
-                  throw new Error('cannot determine "typeDuration":\nmaybe "expirationDatetime" is not in the future ?');
-                window.setInputFormByID('typeDuration', typeDuration);
+            marketsContract.methods.calcMarketInterval(getExpirationDatetime()).call()
+              .then(function(marketInterval){
+                if (marketInterval === null)
+                  throw new Error('cannot determine "marketInterval":\nmaybe "expirationDatetime" is invalid or not in the future ?');
+                setInputFormByID('marketInterval', marketInterval);
               })
               .catch(function(err){
-                modal_error(err + '\r\n\r\nstack trace:\r\n' + err.stack);
+                modal_error(
+                  'cannot determine "marketInterval":\nmaybe "expirationDatetime" is invalid or not in the future ?\r\n\r\n' +
+                  err + '\r\n\r\nstack trace:\r\n' + err.stack
+                );
               });
           } catch (err){
-            modal_error(err + '\r\n\r\nstack trace:\r\n' + err.stack);
+            modal_error(
+              'cannot determine "marketInterval":\nmaybe "expirationDatetime" is invalid or not in the future ?\r\n\r\n' +
+              err + '\r\n\r\nstack trace:\r\n' + err.stack
+            );
           }
         };
 
@@ -870,69 +1151,93 @@ require(
           try {
             var accountSign = getAccountSign();
             var factHash = factsigner.factHash(getFacts());
-            var signature = factsigner.sign(web3, accountSign.privateKey, factHash);
-            window.setInputFormByID('signatureFactHash', JSON.stringify(signature, null, 2));
+            var signature = factsigner.signFactsignerMessage(factHash, accountSign.privateKey);
+            setInputFormByID('signatureFactHash', JSON.stringify(signature, null, 2));
           } catch (err){
-            window.setInputFormByID('signatureFactHash', err);
+            setInputFormByID('signatureFactHash', err);
           }
         };
 
         document.getElementById('signatureFinalCalc').onclick = function(evt){
           evt.preventDefault();
           try {
-            var baseUnitExp = getBaseUnitExp();
-            var valueBn = parseFloatOrThrowError(document.getElementById('finalValue').value, baseUnitExp, '"finalValue" invalid');
+            var isStriked = Boolean(parseIntOrThrowError(document.getElementById('configMarketType2').value, '"configMarketType" invalid'));
+
+            var value;
+            if (isStriked){
+              /* striked market */
+              var baseUnitExp = parseIntOrThrowError(document.getElementById('baseUnitExp2').value, '"baseUnitExp" invalid');
+              value = parseFloatOrThrowError(document.getElementById('finalValue').value, baseUnitExp, '"finalValue" invalid');
+            } else {
+              /* named market */
+// TODO is finalValue int128 like namedRange or int256?
+              value = factsigner.stringToNamedRange(parseJsonString(document.getElementById('finalValue').value, '"finalValue" must be a (json) string'));
+// TODO check value in namedRanges!
+            }
             var hash = factsigner.settlementHash(
-              document.getElementById('factHash').value,
-              valueBn,
-              factsigner.SETTLEMENT_TYPE_FINAL
+              document.getElementById('factHash2').value,
+              value,
+              factsigner.constants.settlementType.FINAL
             );
-            var signature_market_expire = factsigner.sign(web3, getAccountSign().privateKey, hash);
-            window.setInputFormByID('signatureFinal', JSON.stringify(signature_market_expire, null, 2));
+            var signature_market_expire = factsigner.signFactsignerMessage(hash, getAccountSign().privateKey);
+            setInputFormByID('signatureFinal', JSON.stringify(signature_market_expire, null, 2));
           } catch (err){
-            window.setInputFormByID('signatureFinal', err);
+            setInputFormByID('signatureFinal', err);
           }
         };
 
         document.getElementById('fetchMarketData').onclick = function(evt){
           evt.preventDefault();
           try {
+            var contractAddr = getContractAddr();
             var marketsContract = new web3.eth.Contract(
               digioptionsContracts.digioptionsMarketsAbi(),
-              getContractAddr()
+              contractAddr
             );
 
-            var marketHash = document.getElementById('marketHash2').value;
+            var marketHash = document.getElementById('marketHash').value;
 
             marketsContract.methods.getContractInfo().call()
               .then(function(contractInfo){
                 //console.log('contractInfo', contractInfo);
                 if (! contractInfo){
-                  throw new Error('Error reading contract info/version! Maybe contract address is invalid?');
+                  throw new Error('reading contract info/version failed - maybe "contractAddr" is invalid');
                 }
-                if (contractInfo.contractType !== digioptionsContracts.constants.contractType.CONTRACT_DIGIOPTIONSMARKETS){
-                  throw new Error('Invalid contract type');
+                var contractDescription = digioptionsContracts.contractInfoToContractDescription(
+                  web3,
+                  contractAddr,
+                  contractInfo
+                );
+                //console.log('contractDescription', contractDescription);
+                if (contractDescription.contractType !== digioptionsContracts.constants.contractType.DIGIOPTIONSMARKETS){
+                  throw new Error('invalid "contractType"');
                 }
 
-                return marketsContract.methods.getMarketData(marketHash).call();
+                return marketsContract.methods.getMarketDataByMarketHash(addrZero, marketHash).call();
               })
               .then(function(marketData){
 
                 if (Number(marketData.marketBaseData.expirationDatetime) === 0){
-                  throw new Error('Market does not (yet) exists!');
+                  throw new Error('market does not (yet) exists');
                 }
 
                 var date = new Date(0); // The 0 there is the key, which sets the date to the epoch
                 date.setUTCSeconds(marketData.marketBaseData.expirationDatetime);
 
-                window.setInputFormByID('expirationDatetime', date.toUTCString(), true);
-                window.setInputFormByID('underlyingString2', factsigner.hexToString(marketData.marketBaseData.underlying));
-                window.setInputFormByID('expirationDatetime2', date.toUTCString());
-                window.setInputFormByID('ndigit2', marketData.marketBaseData.ndigit);
-                window.setInputFormByID('baseUnitExp2', marketData.marketBaseData.baseUnitExp);
-                window.setInputFormByID('objectionPeriod2', marketData.marketBaseData.objectionPeriod);
+                setInputFormByID('underlyingParts2', JSON.stringify(marketData.marketBaseData.underlyingString.split('\0')));
+                setInputFormByID('expirationDatetime2', date.toUTCString());
+                setInputFormByID('objectionPeriod2', marketData.marketBaseData.objectionPeriod);
+                setInputFormByID('configMarketType2', (marketData.marketBaseData.config & factsigner.constants.configMarketTypeIsStrikedMask)? 1 : 0);
+                setInputFormByID('configIntervalType2', (marketData.marketBaseData.config & factsigner.constants.configIntervalTypeIsUsedMask)? 1 : 0);
+                setInputFormByID('marketCategory2', marketData.marketBaseData.marketCategory);
+                setInputFormByID('ndigit2', marketData.marketBaseData.ndigit);
+                setInputFormByID('baseUnitExp2', marketData.marketBaseData.baseUnitExp);
+                setInputFormByID('namedRanges2', (marketData.marketBaseData.config & factsigner.constants.configMarketTypeIsStrikedMask) ? '[ ]' : JSON.stringify(marketData.marketBaseData.strikes.map(function(x){return factsigner.namedRangeToString(web3.utils.toHex(x));}), null, 1));
 
-                window.setInputFormByID('factHash2', factsigner.factHash(marketData.marketBaseData));
+                setInputFormByID('factHash2', factsigner.factHash(marketData.marketBaseData));
+
+                /* clear signatureFinal */
+                setInputFormByID('signatureFinal', '', false);
               })
               .catch(function(err){
                 modal_error(err + '\r\n\r\nstack trace:\r\n' + err.stack);
@@ -961,32 +1266,40 @@ require(
               signature = JSON.parse(document.getElementById('signatureFactHash').value);
             } catch (err){
               throw new Error('"signatureFactHash" invalid');
-            } 
+            }
 
             marketsContract.methods.getContractInfo().call()
               .then(function(contractInfo){
-                //console.log('contractInfo', contractInfo);
                 if (! contractInfo){
-                  throw new Error('Error reading contract info/version! Maybe contract address is invalid?');
+                  throw new Error('reading contract info/version failed - maybe "contractAddr" is invalid');
                 }
-                if (contractInfo.contractType !== digioptionsContracts.constants.contractType.CONTRACT_DIGIOPTIONSMARKETS){
-                  throw new Error('Invalid contract type');
+                var contractDescription = digioptionsContracts.contractInfoToContractDescription(
+                  web3,
+                  getContractAddr(),
+                  contractInfo
+                );
+                //console.log('contractDescription', contractDescription);
+                if (contractDescription.contractType !== digioptionsContracts.constants.contractType.DIGIOPTIONSMARKETS){
+                  throw new Error('invalid "contractType"');
                 }
 
-                return marketsContract.methods.getMarketData(marketHash).call();
+                return marketsContract.methods.getMarketDataByMarketHash(addrZero, marketHash).call();
               })
               .then(function(marketData){
 
                 if (Number(marketData.marketBaseData.expirationDatetime) !== 0){
-                  throw new Error('Market already exists!');
+                  throw new Error('market already exists');
                 }
 
-                return marketsContract.methods.calcTypeDuration(getFacts().expirationDatetime).call();
+                return marketsContract.methods.calcMarketInterval(getFacts().expirationDatetime).call();
               })
-              .then(function(typeDuration) {
+              .then(function(marketInterval) {
 
-                if (typeDuration !== marketBaseData.typeDuration){
-                  throw new Error('"typeDuration" invalid (expected typeDuration: ' + typeDuration + ')');
+                if (! getIntervalTypeUsed()){
+                  marketInterval = factsigner.constants.marketInterval.NONE;
+                }
+                if (marketInterval !== marketBaseData.marketInterval){
+                  throw new Error('"marketInterval" invalid (expected marketInterval: ' + marketInterval + ')');
                 }
 
                 return web3.eth.getAccounts();
@@ -994,7 +1307,7 @@ require(
               .then(function(accounts) {
                 //console.log('from (account): ', accounts[0]);
                 if (! web3.utils.isAddress(accounts[0])){
-                  throw new Error('No account! Maybe you need to unlock MetaMask?');
+                  throw new Error('no account fount - maybe you need to unlock MetaMask');
                 }
 
                 var marketUrl = digioptionsTools.dataNetworksUtils.getDigioptionsUrl(
@@ -1009,15 +1322,20 @@ require(
                   signature /* signature */
                 )
                   .send({
-                    from: accounts[0]
-                    //gas: 3000000,
+                    from: accounts[0],
+                    gas: 400000 // TODO variable
                   })
                   .on('transactionHash', function(/*transactionHash*/){
                     modal_success(
-                      'Create market transaction sent.\r\n\r\n' + 
-                      'Do not forget to remember the marketHash:\r\n' + 
-                      marketHash + '\r\n\r\n' + 
-                      'If the transaction succeeds you can view the market at:\r\n' + marketUrl);
+                      'Create market transaction sent.\r\n\r\n' +
+                      'Do not forget to remember the marketHash:\r\n' +
+                      marketHash + '\r\n\r\n' +
+                      (marketUrl?
+                        ('If the transaction succeeds you can view the market at:\r\n' + marketUrl)
+                        :
+                        ''
+                      )
+                    );
                   });
               })
               .then(function(){
@@ -1033,7 +1351,7 @@ require(
 
         document.getElementById('marketSettleBtn').onclick = function(evt){
           evt.preventDefault();
-          console.log('click create settle market');
+          //console.log('click create settle market');
           try {
 
             var marketsContract = new web3.eth.Contract(
@@ -1041,38 +1359,44 @@ require(
               getContractAddr()
             );
 
-            var marketHash = document.getElementById('marketHash2').value; // TODO validate
-            var baseUnitExp = parseIntOrThrowError(document.getElementById('baseUnitExp2').value, '"baseUnitExp" invalid');
+            var marketHash = document.getElementById('marketHash').value; // TODO validate
 
             var signature;
             try {
               //console.log(document.getElementById('signatureFinal'));
+              // TODO add support for named values
               signature = JSON.parse(document.getElementById('signatureFinal').value);
             } catch (err){
               throw new Error('"signatureFinal" invalid');
-            } 
+            }
 
             marketsContract.methods.getContractInfo().call()
               .then(function(contractInfo){
                 //console.log('contractInfo', contractInfo);
                 if (! contractInfo){
-                  throw new Error('Error reading contract info/version! Maybe contract address is invalid?');
+                  throw new Error('reading contract info/version failed - maybe "contractAddr" is invalid');
                 }
-                if (contractInfo.contractType !== digioptionsContracts.constants.contractType.CONTRACT_DIGIOPTIONSMARKETS){
-                  throw new Error('Invalid contract type');
+                var contractDescription = digioptionsContracts.contractInfoToContractDescription(
+                  web3,
+                  getContractAddr(),
+                  contractInfo
+                );
+                //console.log('contractDescription', contractDescription);
+                if (contractDescription.contractType !== digioptionsContracts.constants.contractType.DIGIOPTIONSMARKETS){
+                  throw new Error('invalid "contractType"');
                 }
 
-                return marketsContract.methods.getMarketData(marketHash).call();
+                return marketsContract.methods.getMarketDataByMarketHash(addrZero, marketHash).call();
               })
               .then(function(marketData){
                 //console.log('marketData', marketData);
 
                 if (Number(marketData.marketBaseData.expirationDatetime) === 0){
-                  throw new Error('Market does not (yet) exists!');
+                  throw new Error('market does not (yet) exists');
                 }
 
-                if (marketData.data.settled) {
-                  throw new Error('Market is already settled!');
+                if (marketData.marketState.settled) {
+                  throw new Error('market is already settled');
                 }
 
                 return web3.eth.getAccounts();
@@ -1080,28 +1404,39 @@ require(
               .then(function(accounts) {
                 //console.log('from (account): ', accounts[0]);
                 if (! web3.utils.isAddress(accounts[0])){
-                  throw new Error('No account! Maybe you need to unlock MetaMask?');
+                  throw new Error('no account found - maybe you need to unlock MetaMask');
                 }
 
-                var valueBn = factsigner.parseFloatToBn(document.getElementById('finalValue').value, baseUnitExp);
+// TODO duplicate
+                var isStriked = Boolean(parseIntOrThrowError(document.getElementById('configMarketType2').value, '"configMarketType" invalid'));
+                var value;
+                if (isStriked){
+                  /* striked market */
+                  var baseUnitExp = parseIntOrThrowError(document.getElementById('baseUnitExp2').value, '"baseUnitExp" invalid');
+                  value = parseFloatOrThrowError(document.getElementById('finalValue').value, baseUnitExp, '"finalValue" invalid');
+                } else {
+                  /* named market */
+                  value = factsigner.stringToNamedRange(parseJsonString(document.getElementById('finalValue').value, '"finalValue" must be a (json) string'));
+                }
 
                 return marketsContract.methods.settlement(
                   marketHash,
                   signature,
-                  valueBn.toString(),
-                  10 // just do payout for 10 user only // TODO
+                  value.toString(),
+                  [], // users // TODO
+                  [] // TODO offerHash
                 )
                   .send({
-                    from: accounts[0]
-                    //gas: 3000000,
+                    from: accounts[0],
+                    gas: 4000000 // TODO variable ~ 28760 // only required for ganache and without metamask?
                   })
                   .on('transactionHash', function(/*transactionHash*/){
-                    console.log('settlement transaction sent');
+                    //console.log('settlement transaction sent');
                     modal_success('settlement transaction sent');
                   });
               })
               .then(function(){
-                console.log('transaction success');
+                //console.log('transaction success');
               })
               .catch(function(err){
                 modal_error(err);
@@ -1114,16 +1449,19 @@ require(
         // enable buttons after handlers are installed (e.g. "create signing key" / "create new market")
         document.getElementById('marketCreateBtn').removeAttribute('disabled');
         document.getElementById('marketSettleBtn').removeAttribute('disabled');
-        document.getElementById('calcTypeDuration').removeAttribute('disabled');
+        document.getElementById('calcMarketInterval').removeAttribute('disabled');
         document.getElementById('fetchMarketData').removeAttribute('disabled');
 
-        if (!((window.parameters.signatureFactHash) || (window.parameters.signatureFinal))){
+        if (! parameters.contractAddr){
+          document.getElementById('dropdownContractListBtn').removeAttribute('disabled');
+        }
+        if (!((parameters.signerPrivateKey) || (parameters.signatureFactHash) || (parameters.signatureFinal))){
           document.getElementById('createSigningKey').removeAttribute('disabled');
         }
-        if (! window.parameters.signatureFactHash){
+        if (! parameters.signatureFactHash){
           document.getElementById('signatureFactHashCalc').removeAttribute('disabled');
         }
-        if (!window.parameters.signatureFinal){
+        if (!parameters.signatureFinal){
           document.getElementById('signatureFinalCalc').removeAttribute('disabled');
         }
       })
