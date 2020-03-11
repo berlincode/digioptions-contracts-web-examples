@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
-    <title>Deploy contracts example</title>
+    <title>MarketLister contract config example</title>
 
     <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="icon" href="data:;base64,iVBORw0KGgo="/>
@@ -21,7 +21,7 @@ button:disabled {
   </head>
   <body>
     <div class="container">
-      <h1>Deploy contracts</h1>
+      <h1>Config/read marketLister contracts</h1>
 
       <div id="modal" class="modal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
@@ -44,7 +44,7 @@ button:disabled {
       </div>
 
       <p>
-        Using this page you can deploy digioptions contracts to the blockchain.
+        Only the owner may modify the settings. 
       </p>
       <p>
         This online example is part of <a href="https://github.com/berlincode/digioptions-contracts-web-examples">https://github.com/berlincode/digioptions-contracts-web-examples</a>
@@ -62,37 +62,85 @@ button:disabled {
         </div>
 
         <div class="form-group row">
-          <label class="col-3 control-label" for="contract">contract:</label>
-          <div class="col">
-            <select id="contract" name="contract" class="col form-control">
-            </select>
-          </div>
-        </div>
-
-        <div class="form-group row" style="display: none" id="form-group-marketsAddr">
           <div class="col-3">
-            <label class="col-form-label" for="marketsAddr">
-                markets contract (address):
+            <label class="col-form-label" for="marketListerAddr">
+                marketListerAddr (address):
             </label>
-<!-- <a tabindex="0" style="padding-left: 3px; padding-right: 3px" class="text-white bg-secondary" role="button" data-toggle="popover" data-container="body" data-placement="top" data-trigger="focus" title="Dismissible popover" data-content="And here's some amazing content. It's very engaging. Right?">?</a>-->
           </div>
           <div class="input-group col">
-            <input class="form-control" type="text" id="marketsAddr" name="marketsAddr" placeholder="0x..." value="" />
+            <input class="form-control" type="text" id="marketListerAddr" name="marketListerAddr" placeholder="0x..." value="" />
             <div class="input-group-append">
-              <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">default contracts <span class="caret"></span></button>
-              <div class="dropdown-menu dropdown-menu-right" id="dropdownContractList">
+              <button id="dropdownMarketListerListBtn" type="button" class="btn btn-outline-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" disabled>default contracts <span class="caret"></span></button>
+              <div class="dropdown-menu dropdown-menu-right" id="dropdownMarketListerList">
               </div>
             </div>
           </div>
         </div>
+      </form>
 
-        <div class="form-group row">
-          <div class="offset-3 col" style="">
-            <button type="submit" class="btn btn-primary" id="deployBtn" name="deployBtn" value="1" disabled>deploy contract</button>
-          </div>
+      <ul class="nav nav-tabs" role="tablist">
+        <li class="nav-item">
+          <a class="nav-link" id="marketListerRead-tab" data-toggle="tab" href="#marketListerRead" role="tab" aria-controls="marketListerRead" aria-selected="true">
+            Read
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="marketListerWrite-tab" data-toggle="tab" href="#marketListerWrite" role="tab" aria-controls="marketListerWrite" aria-selected="false">
+            Write
+          </a>
+        </li>
+      </ul>
+
+      <div class="tab-content">
+
+        <div class="tab-pane fade" id="marketListerRead" role="tabpanel" aria-labelledby="marketListerRead-tab">
+          <form class="form-horizontal">
+            <div class="form-group row">
+              <div class="col-3">
+                <label class="col-form-label" style="margin: 0; padding: 0;" for="marketListerDescription">
+                  marketListerDescription:
+                </label>
+              </div>
+              <div class="col">
+                <textarea class="form-control" style="font-size: 80%;" id="marketListerDescription" name="marketListerDescription" rows="10" readonly></textarea>
+              </div>
+              <div class="col-2">
+                <button type="submit" class="btn btn-primary" id="readBtn" name="readBtn" value="1" disabled>read contract</button>
+              </div>
+            </div>
+
+          </form>
         </div>
 
-      </form>
+        <div class="tab-pane fade" id="marketListerWrite" role="tabpanel" aria-labelledby="marketListerWrite-tab">
+          <form class="form-horizontal">
+
+            <div class="form-group row">
+              <label class="col-3 col-form-label" for="signerAddr">
+                signerAddr:
+              </label>
+              <div class="col">
+                <input class="form-control" type="text" id="signerAddr" name="signerAddr" placeholder="0x..." value="" />
+              </div>
+            </div>
+            <div class="form-group row">
+              <label class="col-3 col-form-label" for="value">
+                value:
+              </label>
+              <div class="col">
+                <input class="form-control" type="text" id="value" name="value" value="0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" />
+              </div>
+            </div>
+
+            <div class="form-group row">
+              <div class="offset-3 col">
+                <button class="btn btn-primary" id="setSignerBtn" name="setSignerBtn" value="1" disabled>setSigner</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
     </div>
 
     <script>
@@ -178,6 +226,7 @@ require(
     };
 
     var dataNetworks = digioptionsTools.dataNetworks;
+    var account;
 
     var parameters = (function(){
       // parse browser's hash/query-string append parameters and try to fill out form input values
@@ -232,66 +281,35 @@ require(
 
     console.log('Found provider or window.ethereum instance.');
 
-    if (! window.ethereum){
-      modal_error('No web3 provider (i.e. metamask) found!');
-      return;
-    }
-
-    console.log('Found web3 instance.');
-
-    var contractDefs = {
-      'markets': {
-        version: digioptionsContracts.versionMarkets,
-        abi: digioptionsContracts.digioptionsMarketsAbi(),
-        bin: digioptionsMarketsBin()
-      },
-      'marketLister': {
-        version: digioptionsContracts.versionMarketLister,
-        abi: digioptionsContracts.digioptionsMarketListerAbi(),
-        bin: digioptionsMarketListerBin()
+    var getContractAddr = function(){
+      var contractAddr = document.getElementById('marketListerAddr').value;
+      if (! web3.utils.isAddress(contractAddr)){
+        throw new Error('invalid "marketListerAddr"');
       }
-      /*,
-      'meta': { // TODO
-        version: digioptionsContracts.versionMeta,
-        abi: ...,
-        bin: digioptionsMetaBin()
-        }
-      */
+      return contractAddr;
     };
 
-    /* add contracts to select */
-    for (var contractName in contractDefs){
-      var contractVersionString = digioptionsContracts.versionToString(contractDefs[contractName].version);
-
-      var option = document.createElement('option');
-      option.setAttribute('value', contractName);
-      option.textContent = contractName + ' (version: ' + contractVersionString + ')';
-
-      document.getElementById('contract').appendChild(option);
-    }
-
-    document.getElementById('contract').onchange = function(/*evt*/){
-      var contractName = document.getElementById('contract').value;
-      if (contractName === 'marketLister'){
-        document.getElementById('form-group-marketsAddr').removeAttribute('style');
-      } else {
-        document.getElementById('form-group-marketsAddr').setAttribute('style', 'display: none;');
-      }
-    };
+    //document.getElementById('marketListerAddr').onchange = function(/*evt*/){
+    //  console.log('onchange'); // TODO
+    //};
 
     web3enable
       .then(function(){
+        return web3.eth.getAccounts();
+      })
+      .then(function(accounts){
+        account = accounts[0];
         return web3.eth.net.getNetworkType();
       })
       .then(function(network){
         var dataNetwork = dataNetworks[network];
         setInputFormByID('network', network + (dataNetwork && dataNetwork.testnet ? ' (testnet)' : ''));
 
-        if ((! dataNetwork) || (! dataNetwork.contractDescriptions)){
+        if ((! dataNetwork) || (! dataNetwork.contractDescriptions) || (dataNetwork.contractDescriptions.length === 0)){
           var header = document.createElement('h6');
           header.setAttribute('class', 'dropdown-header');
           header.textContent = 'No default contracts for network "' + network + '" known';
-          document.getElementById('dropdownContractList').appendChild(header);
+          document.getElementById('dropdownMarketListerList').appendChild(header);
         } else {
 
           var contracts = {};
@@ -303,12 +321,12 @@ require(
               anchor.setAttribute('href', '#');
               anchor.onclick = function(evt){
                 evt.preventDefault();
-                setInputFormByID('marketsAddr', contractAddr);
+                setInputFormByID('marketListerAddr', contractAddr);
               };
-              anchor.textContent = name;
+              anchor.textContent = name + ': '+ contractAddr.substring(0, 10) + '...';
               anchor.setAttribute('class', 'dropdown-item');
 
-              document.getElementById('dropdownContractList').appendChild(anchor);
+              document.getElementById('dropdownMarketListerList').appendChild(anchor);
             }
           };
 
@@ -329,7 +347,9 @@ require(
                   contractAddr,
                   contractInfo
                 );
-                addItem('market: ' + contractDescription.digiOptionsMarketsAddr, contractDescription.digiOptionsMarketsAddr);
+                if (contractDescription.contractType !== digioptionsContracts.constants.contractType.DIGIOPTIONSMARKETS){
+                  addItem('marketListerContract', contractAddr);
+                }
               })
               .catch(function(/*err*/){
                 /* ignore error */
@@ -338,53 +358,107 @@ require(
           }
         }
 
-        document.getElementById('deployBtn').onclick = function(evt){
+        document.getElementById('readBtn').onclick = function(evt){
           evt.preventDefault();
-          //console.log('click deploy');
+          console.log('click read');
           try {
+            var contractAddr = getContractAddr();
+            var contract = new web3.eth.Contract(
+              digioptionsContracts.digioptionsMarketListerAbi(),
+              contractAddr
+            );
 
-            var contractName = document.getElementById('contract').value;
-
-            var deployArguments = [];
-            if (contractName === 'marketLister') {
-              var marketsAddr = document.getElementById('marketsAddr').value;
-              console.log('marketsAddr:', marketsAddr);
-
-              if (! web3.utils.isAddress(marketsAddr)){
-                throw new Error('Invalid address marketsAddr "' + marketsAddr + '" !');
-              }
-              deployArguments = [marketsAddr];
-            }
-
-            var contractBin = contractDefs[contractName].bin;
-            var contractAbi = contractDefs[contractName].abi;
-            var contract = new web3.eth.Contract(contractAbi);
-
-            web3.eth.getAccounts()
-              .then(function(accounts) {
-                console.log('from (account): ', accounts[0]);
-                if (! web3.utils.isAddress(accounts[0])){
-                  throw new Error('No account! Maybe you need to unlock MetaMask?');
+            contract.methods.getContractInfo().call()
+              .then(function(contractInfo){
+                //console.log('contractInfo', contractInfo);
+                if (! contractInfo){
+                  throw new Error('reading contract info/version failed - maybe "contractAddr" is invalid');
                 }
-
-                return contract.deploy({
-                  data: contractBin,
-                  arguments: deployArguments
-                })
-                  .send({
-                    gas: 4500000, // TODO
-                    from: accounts[0]
-                  })
-                  .on('transactionHash', function(/*transactionHash*/){
-                    modal_success('Transaction sent. Please stand by.');
-                  });
+                var contractDescription = digioptionsContracts.contractInfoToContractDescription(
+                  web3,
+                  contractAddr,
+                  contractInfo
+                );
+                //console.log('contractDescription', contractDescription);
+                if (contractDescription.contractType === digioptionsContracts.constants.contractType.DIGIOPTIONSMARKETS){
+                  throw new Error('The given contract address:\r\n' + contractAddr + '\r\n is not a marketLister contract.');
+                }
+  
+                return contract.methods.getMarketListerInfo().call();
               })
-              .then(function(contract){
-                modal_success('Your contract was deployed to address:\r\n' + contract.address);
-                console.log('transaction success');
+              .then(function(marketListerInfo){
+                var marketListerDescription = digioptionsContracts.marketListerInfoToMarketListerDescription(
+                  web3,
+                  marketListerInfo
+                );
+                setInputFormByID('marketListerDescription', JSON.stringify(marketListerDescription, null, 2));
+
               })
               .catch(function(err){
-                modal_error(err + '\r\n\r\nstack trace:\r\n' + err.stack);
+                modal_error(
+                  'cannot read contract:\r\nmaybe "marketListerAddr" is invalid ?\r\n\r\n' +
+                  err + '\r\n\r\nstack trace:\r\n' + err.stack
+                );
+              });
+
+          } catch (err){
+            modal_error(err + '\r\n\r\nstack trace:\r\n' + err.stack);
+          }
+        };
+
+        document.getElementById('setSignerBtn').onclick = function(evt){
+          evt.preventDefault();
+          console.log('click write');
+          try {
+            var contractAddr = getContractAddr();
+            var contract = new web3.eth.Contract(
+              digioptionsContracts.digioptionsMarketListerAbi(),
+              contractAddr
+            );
+
+            contract.methods.getContractInfo().call()
+              .then(function(contractInfo){
+                //console.log('contractInfo', contractInfo);
+                if (! contractInfo){
+                  throw new Error('reading contract info/version failed - maybe "contractAddr" is invalid');
+                }
+                var contractDescription = digioptionsContracts.contractInfoToContractDescription(
+                  web3,
+                  contractAddr,
+                  contractInfo
+                );
+                //console.log('contractDescription', contractDescription);
+                if (contractDescription.contractType === digioptionsContracts.constants.contractType.DIGIOPTIONSMARKETS){
+                  throw new Error('The given contract address:\r\n' + contractAddr + '\r\n is not a marketLister contract.');
+                }
+  
+                var signerAddr = document.getElementById('signerAddr').value;
+                if (! web3.utils.isAddress(signerAddr)){
+                  throw new Error('invalid "signerAddr"');
+                }
+
+                var value = document.getElementById('value').value;
+                return contract.methods.setSigner(
+                  signerAddr,
+                  value
+                )
+                  .send({
+                    from: account,
+                    gas: 200000 // TODO variable
+                  })
+                  .on('transactionHash', function(/*transactionHash*/){
+                    modal_success(
+                      'Write transaction sent.'
+                    );
+                  })
+                  .catch(function(err){
+                    modal_error(err + '\r\n\r\nstack trace:\r\n' + err.stack);
+                  });
+              })
+              .catch(function(err){
+                modal_error(
+                  err + '\r\n\r\nstack trace:\r\n' + err.stack
+                );
               });
 
           } catch (err){
@@ -393,7 +467,17 @@ require(
         };
 
         // enable buttons
-        document.getElementById('deployBtn').removeAttribute('disabled');
+        document.getElementById('readBtn').removeAttribute('disabled');
+        document.getElementById('setSignerBtn').removeAttribute('disabled');
+
+        if (! parameters.marketListerAddr){
+          document.getElementById('dropdownMarketListerListBtn').removeAttribute('disabled');
+        }
+
+        // enable marketListerRead tab as default
+        document.getElementById('marketListerRead-tab').classList.add('active');
+        document.getElementById('marketListerRead').classList.add('active');
+        document.getElementById('marketListerRead').classList.add('show');
 
       })
       .catch(function(err){
