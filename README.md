@@ -10,6 +10,7 @@ This repository contains examples that helps interacting with the ethereum contr
 
  * deploy.html - deploy contracts [click here for the online version](https://berlincode.github.io/digioptions-contracts-web-examples/deploy.html)
  * markets-create.html - create and settle markets [click here for the online version](https://berlincode.github.io/digioptions-contracts-web-examples/market_create.html)
+ * marketlister_config.html - read and configure marketLister contracts [click here for the online version](https://berlincode.github.io/digioptions-contracts-web-examples/marketlister_config.html)
 
 Of course you can download the repository and run the files locally. Remember that Metamask does not work on file://...-urls.
 So run `npm run serve` to start a server and open your browser on http://localhost:8010

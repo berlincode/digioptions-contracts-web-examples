@@ -8,6 +8,11 @@
     <link rel="icon" href="data:;base64,iVBORw0KGgo="/>
     <link rel="stylesheet" type="text/css" href="node_modules/font-awesome/css/font-awesome.min.css">
 
+    <script type="text/javascript" src="node_modules/jquery/dist/jquery.min.js"></script>
+    <script type="text/javascript" src="node_modules/popper.js/dist/umd/popper.min.js"></script>
+    <script type="text/javascript" src="node_modules/bootstrap/dist/js/bootstrap.min.js" ></script>
+    <script type="text/javascript" src="node_modules/requirejs/require.js"></script>
+
     <style>
 button:disabled {
   cursor: not-allowed;
@@ -26,25 +31,25 @@ button:disabled {
       <div id="modal" class="modal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
           <div class="modal-content">
-          <div class="modal-header" id="modalheader">
-            <h5 class="modal-title" id="modaltitle">Modal title</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <div class="modal-body">
-            <pre id="modalbody">
-            </pre>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
-          </div>
+            <div class="modal-header" id="modalheader">
+              <h5 class="modal-title" id="modaltitle">Modal title</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <pre id="modalbody">
+              </pre>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+            </div>
           </div>
         </div>
       </div>
 
       <p>
-        <strong>Market creation:</strong> (two stage processs)
+        <strong>Market creation:</strong> (two stage process)
       </p>
       <ol>
         <li>
@@ -57,7 +62,7 @@ button:disabled {
       </ol>
 
       <p>
-        <strong>Market settlement:</strong> (two stage processs)
+        <strong>Market settlement:</strong> (two stage process)
       </p>
       <ol>
         <li>
@@ -326,8 +331,11 @@ button:disabled {
                 <span class="badge badge-primary" style="width: 2em;">13</span>
                 feeTaker0: (address)
               </label>
-              <div class="col">
-                <input class="form-control" type="text" id="feeTaker0" name="feeTaker0" value="0x0000000000000000000000000000000000000000" />
+              <div class="input-group col">
+                <input class="form-control" type="text" id="feeTaker0" name="feeTaker0" value="" placeholder="0x..."/>
+                <div class="input-group-append">
+                  <button type="button" class="btn btn-outline-secondary" id="setFeeTaker0" name="setFeeTaker0" value="1" disabled>marketLister owner</button>
+                </div>
               </div>
             </div>
             <div class="form-group row">
@@ -344,8 +352,11 @@ button:disabled {
                 <span class="badge badge-primary" style="width: 2em;">15</span>
                 feeTaker1: (address)
               </label>
-              <div class="col">
-                <input class="form-control" type="text" id="feeTaker1" name="feeTaker1" value="0x0000000000000000000000000000000000000000" />
+              <div class="input-group col">
+                <input class="form-control" type="text" id="feeTaker1" name="feeTaker1" value="" placeholder="0x..."/>
+                <div class="input-group-append">
+                  <button type="button" class="btn btn-outline-secondary" id="setFeeTaker1" name="setFeeTaker1" value="1" disabled>your own address</button>
+                </div>
               </div>
             </div>
             <div class="form-group row">
@@ -561,10 +572,6 @@ window.addEventListener('hashchange', function(){location.reload();}, false);
 
     </script>
 
-    <script type="text/javascript" src="node_modules/jquery/dist/jquery.min.js"></script>
-    <script type="text/javascript" src="node_modules/popper.js/dist/umd/popper.min.js"></script>
-    <script type="text/javascript" src="node_modules/bootstrap/dist/js/bootstrap.min.js" ></script>
-    <script type="text/javascript" src="node_modules/requirejs/require.js"></script>
 
     <script>
 // COPY TO CLIPBOARD
@@ -692,7 +699,7 @@ require(
             elm.removeAttribute('disabled');
           }
         }
-        // trigger all functions listeninf for 'input' event
+        // trigger all functions listening for 'input' event
         elm.dispatchEvent(new Event('input', {}));
       }
     };
@@ -773,18 +780,14 @@ require(
       document.getElementById('marketCreate').classList.add('show');
     }
 
+    var addrZero = '0x0000000000000000000000000000000000000000';
 
     var web3;
     var web3enable;
-    var addrZero = '0x0000000000000000000000000000000000000000';
 
     if (parameters.ethProvider){
       web3 = new Web3(parameters.ethProvider);
-      //web3enable = Promise.resolve();
-      web3enable = web3.eth.net.getNetworkType() // dummy promise
-        .catch(function(err){
-          throw new Error('failed to connect to ' + parameters.ethProvider);
-        });
+      web3enable = Promise.resolve(null);
       if (parameters.privateKey){
         web3.eth.accounts.wallet.add(parameters.privateKey);
       }
@@ -794,6 +797,9 @@ require(
 
       window.ethereum.autoRefreshOnNetworkChange = false;
       window.ethereum.on('networkChanged', function () {
+        location.reload();
+      });
+      window.ethereum.on('accountsChanged', function (/*accounts*/) {
         location.reload();
       });
 
@@ -1052,16 +1058,21 @@ require(
     updateMarketHashCalculated();
 
     var dataNetworks = digioptionsTools.dataNetworks;
+    var account;
 
     web3enable
       .then(function(){
+        return web3.eth.getAccounts();
+      })
+      .then(function(accounts){
+        account = accounts[0];
         return web3.eth.net.getNetworkType();
       })
       .then(function(network){
         var dataNetwork = dataNetworks[network];
         setInputFormByID('network', network + (dataNetwork && dataNetwork.testnet ? ' (testnet)' : ''));
 
-        if ((! dataNetwork) || (! dataNetwork.contractDescriptions)){
+        if ((! dataNetwork) || (! dataNetwork.contractDescriptions) || (dataNetwork.contractDescriptions.length === 0)){
           var header = document.createElement('h6');
           header.setAttribute('class', 'dropdown-header');
           header.textContent = 'No default contracts for network "' + network + '" known';
@@ -1069,6 +1080,23 @@ require(
         } else {
 
           var contracts = {};
+          var addItem = function(name, contractAddr){
+            if (!contracts[contractAddr]){
+              contracts[contractAddr] = true; // add each addr only once
+
+              var anchor = document.createElement('a');
+              anchor.setAttribute('href', '#');
+              anchor.onclick = function(evt){
+                evt.preventDefault();
+                setInputFormByID('contractAddr', contractAddr);
+              };
+              anchor.textContent = name + ': '+ contractAddr.substring(0, 10) + '...';
+              anchor.setAttribute('class', 'dropdown-item');
+
+              document.getElementById('dropdownContractList').appendChild(anchor);
+            }
+          };
+
           for (var contractDescriptionIdx in dataNetwork.contractDescriptions){
             var contractAddr = dataNetwork.contractDescriptions[contractDescriptionIdx].addr;
             var contract = new web3.eth.Contract(
@@ -1087,21 +1115,10 @@ require(
                   contractAddr,
                   contractInfo
                 );
-                var marketsAddr = contractDescription.digiOptionsMarketsAddr;
-                if (marketsAddr && (!contracts[marketsAddr])){
-                  contracts[marketsAddr] = true; // add each addr only once
-
-                  var anchor = document.createElement('a');
-                  anchor.setAttribute('href', '#');
-                  anchor.onclick = function(evt){
-                    evt.preventDefault();
-                    setInputFormByID('contractAddr', marketsAddr);
-                  };
-                  anchor.textContent = marketsAddr;
-                  anchor.setAttribute('class', 'dropdown-item');
-
-                  document.getElementById('dropdownContractList').appendChild(anchor);
+                if (contractDescription.contractType !== digioptionsContracts.constants.contractType.DIGIOPTIONSMARKETS){
+                  addItem('marketListerContract', contractAddr);
                 }
+                addItem('marketsContract', contractDescription.digiOptionsMarketsAddr);
               })
               .catch(function(/*err*/){
                 /* ignore error */
@@ -1122,25 +1139,25 @@ require(
             return;
           }
           try {
-            var marketsContract = new web3.eth.Contract(
-              digioptionsContracts.digioptionsMarketsAbi(),
+            var contract = new web3.eth.Contract(
+              digioptionsContracts.digioptionsMarketListerAbi(),
               getContractAddr()
             );
-            marketsContract.methods.calcMarketInterval(getExpirationDatetime()).call()
+            contract.methods.calcMarketInterval(getExpirationDatetime()).call()
               .then(function(marketInterval){
                 if (marketInterval === null)
-                  throw new Error('cannot determine "marketInterval":\nmaybe "expirationDatetime" is invalid or not in the future ?');
+                  throw new Error('cannot determine "marketInterval":\r\nmaybe "expirationDatetime" is invalid or not in the future ?');
                 setInputFormByID('marketInterval', marketInterval);
               })
               .catch(function(err){
                 modal_error(
-                  'cannot determine "marketInterval":\nmaybe "expirationDatetime" is invalid or not in the future ?\r\n\r\n' +
+                  'cannot determine "marketInterval":\r\nmaybe "expirationDatetime" is invalid or not in the future ?\r\n\r\n' +
                   err + '\r\n\r\nstack trace:\r\n' + err.stack
                 );
               });
           } catch (err){
             modal_error(
-              'cannot determine "marketInterval":\nmaybe "expirationDatetime" is invalid or not in the future ?\r\n\r\n' +
+              'cannot determine "marketInterval"\r\n\r\n' +
               err + '\r\n\r\nstack trace:\r\n' + err.stack
             );
           }
@@ -1190,14 +1207,14 @@ require(
           evt.preventDefault();
           try {
             var contractAddr = getContractAddr();
-            var marketsContract = new web3.eth.Contract(
-              digioptionsContracts.digioptionsMarketsAbi(),
+            var contract = new web3.eth.Contract(
+              digioptionsContracts.digioptionsMarketListerAbi(),
               contractAddr
             );
 
             var marketHash = document.getElementById('marketHash').value;
 
-            marketsContract.methods.getContractInfo().call()
+            contract.methods.getContractInfo().call()
               .then(function(contractInfo){
                 //console.log('contractInfo', contractInfo);
                 if (! contractInfo){
@@ -1213,7 +1230,7 @@ require(
                   throw new Error('invalid "contractType"');
                 }
 
-                return marketsContract.methods.getMarketDataByMarketHash(addrZero, marketHash).call();
+                return contract.methods.getMarketDataByMarketHash(addrZero, marketHash).call();
               })
               .then(function(marketData){
 
@@ -1236,8 +1253,10 @@ require(
 
                 setInputFormByID('factHash2', factsigner.factHash(marketData.marketBaseData));
 
-                /* clear signatureFinal */
-                setInputFormByID('signatureFinal', '', false);
+                if (! parameters.signatureFinal){
+                  /* clear signatureFinal */
+                  setInputFormByID('signatureFinal', '', false);
+                }
               })
               .catch(function(err){
                 modal_error(err + '\r\n\r\nstack trace:\r\n' + err.stack);
@@ -1252,8 +1271,8 @@ require(
           //console.log('click create new market');
           try {
 
-            var marketsContract = new web3.eth.Contract(
-              digioptionsContracts.digioptionsMarketsAbi(),
+            var contract = new web3.eth.Contract(
+              digioptionsContracts.digioptionsMarketListerAbi(),
               getContractAddr()
             );
 
@@ -1268,22 +1287,36 @@ require(
               throw new Error('"signatureFactHash" invalid');
             }
 
-            marketsContract.methods.getContractInfo().call()
+            var contractDescription;
+
+            contract.methods.getContractInfo().call()
               .then(function(contractInfo){
                 if (! contractInfo){
                   throw new Error('reading contract info/version failed - maybe "contractAddr" is invalid');
                 }
-                var contractDescription = digioptionsContracts.contractInfoToContractDescription(
+                contractDescription = digioptionsContracts.contractInfoToContractDescription(
                   web3,
                   getContractAddr(),
                   contractInfo
                 );
-                //console.log('contractDescription', contractDescription);
-                if (contractDescription.contractType !== digioptionsContracts.constants.contractType.DIGIOPTIONSMARKETS){
-                  throw new Error('invalid "contractType"');
-                }
 
-                return marketsContract.methods.getMarketDataByMarketHash(addrZero, marketHash).call();
+                if (contractDescription.contractType !== digioptionsContracts.constants.contractType.DIGIOPTIONSMARKETS){
+                  return contract.methods.getMarketListerInfo().call();
+                }
+                return Promise.resolve(null);
+              })
+              .then(function(marketListerInfo){
+                if (marketListerInfo){
+                  var marketListerDescription = digioptionsContracts.marketListerInfoToMarketListerDescription(
+                    web3,
+                    marketListerInfo
+                  );
+                  if (marketBaseData.feeTaker0.toLowerCase() !== marketListerDescription.listerValues.ownerAddr.toLowerCase()){
+                    //console.log('marketListerDescription', marketListerDescription); // TODO
+                    throw new Error(marketBaseData.feeTaker0.toLowerCase() + ' !== ' + marketListerDescription.listerValues.ownerAddr.toLowerCase());
+                  }
+                }
+                return contract.methods.getMarketDataByMarketHash(addrZero, marketHash).call();
               })
               .then(function(marketData){
 
@@ -1291,7 +1324,7 @@ require(
                   throw new Error('market already exists');
                 }
 
-                return marketsContract.methods.calcMarketInterval(getFacts().expirationDatetime).call();
+                return contract.methods.calcMarketInterval(getFacts().expirationDatetime).call();
               })
               .then(function(marketInterval) {
 
@@ -1302,12 +1335,8 @@ require(
                   throw new Error('"marketInterval" invalid (expected marketInterval: ' + marketInterval + ')');
                 }
 
-                return web3.eth.getAccounts();
-              })
-              .then(function(accounts) {
-                //console.log('from (account): ', accounts[0]);
-                if (! web3.utils.isAddress(accounts[0])){
-                  throw new Error('no account fount - maybe you need to unlock MetaMask');
+                if (! web3.utils.isAddress(account)){
+                  throw new Error('no account found - maybe you need to unlock MetaMask');
                 }
 
                 var marketUrl = digioptionsTools.dataNetworksUtils.getDigioptionsUrl(
@@ -1316,13 +1345,13 @@ require(
                   false /* relative url */
                 );
 
-                return marketsContract.methods.createMarket(
+                return contract.methods.createMarket(
                   marketBaseData,
                   false, /* testMarket */
                   signature /* signature */
                 )
                   .send({
-                    from: accounts[0],
+                    from: account,
                     gas: 400000 // TODO variable
                   })
                   .on('transactionHash', function(/*transactionHash*/){
@@ -1354,8 +1383,8 @@ require(
           //console.log('click create settle market');
           try {
 
-            var marketsContract = new web3.eth.Contract(
-              digioptionsContracts.digioptionsMarketsAbi(),
+            var contract = new web3.eth.Contract(
+              digioptionsContracts.digioptionsMarketListerAbi(),
               getContractAddr()
             );
 
@@ -1370,7 +1399,7 @@ require(
               throw new Error('"signatureFinal" invalid');
             }
 
-            marketsContract.methods.getContractInfo().call()
+            contract.methods.getContractInfo().call()
               .then(function(contractInfo){
                 //console.log('contractInfo', contractInfo);
                 if (! contractInfo){
@@ -1386,7 +1415,7 @@ require(
                   throw new Error('invalid "contractType"');
                 }
 
-                return marketsContract.methods.getMarketDataByMarketHash(addrZero, marketHash).call();
+                return contract.methods.getMarketDataByMarketHash(addrZero, marketHash).call();
               })
               .then(function(marketData){
                 //console.log('marketData', marketData);
@@ -1399,11 +1428,7 @@ require(
                   throw new Error('market is already settled');
                 }
 
-                return web3.eth.getAccounts();
-              })
-              .then(function(accounts) {
-                //console.log('from (account): ', accounts[0]);
-                if (! web3.utils.isAddress(accounts[0])){
+                if (! web3.utils.isAddress(account)){
                   throw new Error('no account found - maybe you need to unlock MetaMask');
                 }
 
@@ -1419,7 +1444,7 @@ require(
                   value = factsigner.stringToNamedRange(parseJsonString(document.getElementById('finalValue').value, '"finalValue" must be a (json) string'));
                 }
 
-                return marketsContract.methods.settlement(
+                return contract.methods.settlement(
                   marketHash,
                   signature,
                   value.toString(),
@@ -1427,7 +1452,7 @@ require(
                   [] // TODO offerHash
                 )
                   .send({
-                    from: accounts[0],
+                    from: account,
                     gas: 4000000 // TODO variable ~ 28760 // only required for ganache and without metamask?
                   })
                   .on('transactionHash', function(/*transactionHash*/){
@@ -1446,12 +1471,67 @@ require(
           }
         };
 
+        document.getElementById('setFeeTaker0').onclick = function(evt){
+          evt.preventDefault();
+          try {
+            var contractAddr = getContractAddr();
+            var contract = new web3.eth.Contract(
+              digioptionsContracts.digioptionsMarketListerAbi(),
+              contractAddr
+            );
+            contract.methods.getContractInfo().call()
+              .then(function(contractInfo){
+                if (! contractInfo){
+                  throw new Error('reading contract info/version failed');
+                }
+                var contractDescription = digioptionsContracts.contractInfoToContractDescription(
+                  web3,
+                  contractAddr,
+                  contractInfo
+                );
+                if (contractDescription.contractType !== digioptionsContracts.constants.contractType.DIGIOPTIONSMARKETLISTER){
+                  throw new Error('The given contract address:\r\n' + contractAddr + '\r\n is not a marketLister contract.');
+                }
+                return contract.methods.getMarketListerInfo().call();
+              })
+              .then(function(marketListerInfo){
+                var marketListerDescription = digioptionsContracts.marketListerInfoToMarketListerDescription(
+                  web3,
+                  marketListerInfo
+                );
+                setInputFormByID('feeTaker0', marketListerDescription.listerValues.ownerAddr);
+
+              })
+              .catch(function(err){
+                modal_error(
+                  err + '\r\n\r\nstack trace:\r\n' + err.stack
+                );
+              });
+          } catch (err){
+            modal_error(
+              err + '\r\n\r\nstack trace:\r\n' + err.stack
+            );
+          }
+        };
+
+        document.getElementById('setFeeTaker1').onclick = function(evt){
+          evt.preventDefault();
+          setInputFormByID('feeTaker1', account);
+        };
+
         // enable buttons after handlers are installed (e.g. "create signing key" / "create new market")
         document.getElementById('marketCreateBtn').removeAttribute('disabled');
         document.getElementById('marketSettleBtn').removeAttribute('disabled');
-        document.getElementById('calcMarketInterval').removeAttribute('disabled');
         document.getElementById('fetchMarketData').removeAttribute('disabled');
-
+        if (! parameters.marketInterval){
+          document.getElementById('calcMarketInterval').removeAttribute('disabled');
+        }
+        if (! parameters.feeTaker0){
+          document.getElementById('setFeeTaker0').removeAttribute('disabled');
+        }
+        if ((! parameters.feeTaker1) && (account)){
+          document.getElementById('setFeeTaker1').removeAttribute('disabled');
+        }
         if (! parameters.contractAddr){
           document.getElementById('dropdownContractListBtn').removeAttribute('disabled');
         }
