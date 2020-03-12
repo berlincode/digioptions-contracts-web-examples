@@ -1216,7 +1216,6 @@ require(
 
             contract.methods.getContractInfo().call()
               .then(function(contractInfo){
-                //console.log('contractInfo', contractInfo);
                 if (! contractInfo){
                   throw new Error('reading contract info/version failed - maybe "contractAddr" is invalid');
                 }
@@ -1225,9 +1224,12 @@ require(
                   contractAddr,
                   contractInfo
                 );
-                //console.log('contractDescription', contractDescription);
                 if (contractDescription.contractType !== digioptionsContracts.constants.contractType.DIGIOPTIONSMARKETS){
-                  throw new Error('invalid "contractType"');
+                  // switch to marketsContracts
+                  contract = new web3.eth.Contract(
+                    digioptionsContracts.digioptionsMarketsAbi(),
+                    contractDescription.digiOptionsMarketsAddr
+                  );
                 }
 
                 return contract.methods.getMarketDataByMarketHash(addrZero, marketHash).call();
@@ -1268,7 +1270,6 @@ require(
 
         document.getElementById('marketCreateBtn').onclick = function(evt){
           evt.preventDefault();
-          //console.log('click create new market');
           try {
 
             var contract = new web3.eth.Contract(
@@ -1281,10 +1282,19 @@ require(
 
             var signature;
             try {
-              //console.log(document.getElementById('signatureFactHash'));
               signature = JSON.parse(document.getElementById('signatureFactHash').value);
             } catch (err){
               throw new Error('"signatureFactHash" invalid');
+            }
+
+            if (! web3.utils.isAddress(account)){
+              throw new Error('no account found - maybe you need to unlock MetaMask');
+            }
+
+            if (parameters.checkFeeTaker1IsTransactionSigner){
+              if (marketBaseData.feeTaker1.toLowerCase() !== account.toLowerCase()){
+                throw new Error('"feeTaker1" should be your current account address');
+              }
             }
 
             var contractDescription;
@@ -1335,10 +1345,6 @@ require(
                   throw new Error('"marketInterval" invalid (expected marketInterval: ' + marketInterval + ')');
                 }
 
-                if (! web3.utils.isAddress(account)){
-                  throw new Error('no account found - maybe you need to unlock MetaMask');
-                }
-
                 var marketUrl = digioptionsTools.dataNetworksUtils.getDigioptionsUrl(
                   'pageMarket',
                   {network: network, contractAddr: getContractAddr(), marketHash: marketHash},
@@ -1380,7 +1386,6 @@ require(
 
         document.getElementById('marketSettleBtn').onclick = function(evt){
           evt.preventDefault();
-          //console.log('click create settle market');
           try {
 
             var contract = new web3.eth.Contract(
@@ -1392,7 +1397,6 @@ require(
 
             var signature;
             try {
-              //console.log(document.getElementById('signatureFinal'));
               // TODO add support for named values
               signature = JSON.parse(document.getElementById('signatureFinal').value);
             } catch (err){
@@ -1401,7 +1405,6 @@ require(
 
             contract.methods.getContractInfo().call()
               .then(function(contractInfo){
-                //console.log('contractInfo', contractInfo);
                 if (! contractInfo){
                   throw new Error('reading contract info/version failed - maybe "contractAddr" is invalid');
                 }
@@ -1410,16 +1413,17 @@ require(
                   getContractAddr(),
                   contractInfo
                 );
-                //console.log('contractDescription', contractDescription);
                 if (contractDescription.contractType !== digioptionsContracts.constants.contractType.DIGIOPTIONSMARKETS){
-                  throw new Error('invalid "contractType"');
+                  // switch to marketsContracts
+                  contract = new web3.eth.Contract(
+                    digioptionsContracts.digioptionsMarketsAbi(),
+                    contractDescription.digiOptionsMarketsAddr
+                  );
                 }
 
                 return contract.methods.getMarketDataByMarketHash(addrZero, marketHash).call();
               })
               .then(function(marketData){
-                //console.log('marketData', marketData);
-
                 if (Number(marketData.marketBaseData.expirationDatetime) === 0){
                   throw new Error('market does not (yet) exists');
                 }
@@ -1430,6 +1434,12 @@ require(
 
                 if (! web3.utils.isAddress(account)){
                   throw new Error('no account found - maybe you need to unlock MetaMask');
+                }
+
+                if (parameters.checkFeeTaker1IsTransactionSigner){
+                  if (marketBaseData.feeTaker1.toLowerCase() !== account.toLowerCase()){
+                    throw new Error('"feeTaker1" should be your current account address');
+                  }
                 }
 
 // TODO duplicate
@@ -1456,7 +1466,6 @@ require(
                     gas: 4000000 // TODO variable ~ 28760 // only required for ganache and without metamask?
                   })
                   .on('transactionHash', function(/*transactionHash*/){
-                    //console.log('settlement transaction sent');
                     modal_success('settlement transaction sent');
                   });
               })
