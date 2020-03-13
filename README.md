@@ -1,6 +1,7 @@
 digioptions-contracts-web-examples
 ==================================
 
+[![Version](https://img.shields.io/github/v/tag/berlincode/digioptions-contracts-web-examples.svg?label=version&sort=semver&logo=github)](https://github.com/berlincode/digioptions-contracts-web-examples)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/berlincode/digioptions-contracts-web-examples/blob/master/LICENSE)
 
 Browser based interface for creating and settling DigiOptions markets (html / javascript)
