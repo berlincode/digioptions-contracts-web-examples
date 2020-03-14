@@ -97,7 +97,7 @@ button:disabled {
         <div class="form-group row">
           <div class="col-3">
             <label class="col-form-label" for="contractAddr">
-                contractAddr (contract address):
+              contractAddr
             </label>
           </div>
           <div class="input-group col">
@@ -972,9 +972,9 @@ require(
           signerAddr: validateAddressOrThrowError(document.getElementById('signerAddr').value, '"signerAddr" invalid'),
           feeTaker0: validateAddressOrThrowError(document.getElementById('feeTaker0').value, '"feeTaker0" invalid'),
           feeTaker1: validateAddressOrThrowError(document.getElementById('feeTaker1').value, '"feeTaker1" invalid'),
-          transactionFee0: parseFloatOrThrowError(document.getElementById('transactionFee0Percent').value, digioptionsContracts.constants.atomicOptionPayoutWeiExp - 2, '"transactionFee0 x" invalid').toString(), // input in percent (float)
-          transactionFee1: parseFloatOrThrowError(document.getElementById('transactionFee1Percent').value, digioptionsContracts.constants.atomicOptionPayoutWeiExp - 2, '"transactionFee1" invalid').toString(), // input in percent (float)
-          transactionFeeSigner: parseFloatOrThrowError(document.getElementById('transactionFeeSignerPercent').value, digioptionsContracts.constants.atomicOptionPayoutWeiExp - 2, '"transactionFeeSigner" invalid').toString() // input in percent (float)
+          transactionFee0: parseFloatOrThrowError(document.getElementById('transactionFee0Percent').value, 4 - 2, '"transactionFee0 x" invalid').toString(), // input in percent (float)
+          transactionFee1: parseFloatOrThrowError(document.getElementById('transactionFee1Percent').value, 4 - 2, '"transactionFee1" invalid').toString(), // input in percent (float)
+          transactionFeeSigner: parseFloatOrThrowError(document.getElementById('transactionFeeSignerPercent').value, 4 - 2, '"transactionFeeSigner" invalid').toString() // input in percent (float)
         }
       );
     };
@@ -1389,7 +1389,7 @@ require(
           try {
 
             var contract = new web3.eth.Contract(
-              digioptionsContracts.digioptionsMarketListerAbi(),
+              digioptionsContracts.digioptionsMarketsAbi(),
               getContractAddr()
             );
 
