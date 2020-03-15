@@ -20,7 +20,7 @@ button:disabled {
     </style>
   </head>
   <body>
-    <div class="container">
+    <div style="width: 100%; padding-right: 15px; padding-left: 15px; max-width: 960px; margin-right: auto; margin-left: auto;">
       <h1>Deploy contracts</h1>
 
       <div id="modal" class="modal" tabindex="-1" role="dialog">
@@ -50,7 +50,7 @@ button:disabled {
         This online example is part of <a href="https://github.com/berlincode/digioptions-contracts-web-examples">https://github.com/berlincode/digioptions-contracts-web-examples</a>
       </p>
 
-      <form class="form-horizontal">
+      <form>
 
         <div class="form-group row">
           <label class="col-3 col-form-label" for="network">
@@ -157,9 +157,10 @@ require(
     'digioptions-contracts.js/js/digioptions_markets_bin',
     'digioptions-contracts.js/js/digioptions_market_lister_bin',
     'digioptions-contracts.js/js/digioptions_meta_bin',
+    'digioptions-contracts.js/js/digioptions_meta_abi',
     'digioptions-tools.js'
   ],
-  function(Web3, factsigner, digioptionsContracts, digioptionsMarketsBin, digioptionsMarketListerBin, digioptionsMetaBin, digioptionsTools){
+  function(Web3, factsigner, digioptionsContracts, digioptionsMarketsBin, digioptionsMarketListerBin, digioptionsMetaBin, digioptionsMetaAbi, digioptionsTools){
 
     var setInputFormByID = function(id, value, disable /* optional */){
       var elm = document.getElementById(id);
@@ -250,13 +251,12 @@ require(
         abi: digioptionsContracts.digioptionsMarketListerAbi(),
         bin: digioptionsMarketListerBin()
       }
-      /*,
-      'meta': { // TODO
-        version: digioptionsContracts.versionMeta,
-        abi: ...,
+      ,
+      'meta': {
+        version: {major: 0, minor: 0, bugfix: 0}, // TODO
+        abi: digioptionsMetaAbi(),
         bin: digioptionsMetaBin()
         }
-      */
     };
 
     /* add contracts to select */
@@ -362,7 +362,7 @@ require(
 
             web3.eth.getAccounts()
               .then(function(accounts) {
-                console.log('from (account): ', accounts[0]);
+                //console.log('from (account): ', accounts[0]);
                 if (! web3.utils.isAddress(accounts[0])){
                   throw new Error('No account! Maybe you need to unlock MetaMask?');
                 }

@@ -25,7 +25,7 @@ button:disabled {
     </style>
   </head>
   <body>
-    <div class="container">
+    <div style="width: 100%; padding-right: 15px; padding-left: 15px; max-width: 960px; margin-right: auto; margin-left: auto;">
       <h1>DigiOptions markets creation and settlement example</h1>
 
       <div id="modal" class="modal" tabindex="-1" role="dialog">
@@ -83,7 +83,7 @@ button:disabled {
 
       <h2>Base data</h2>
 
-      <form class="form-horizontal">
+      <form>
 
         <div class="form-group row">
           <label class="col-3 col-form-label" for="network">
@@ -97,7 +97,7 @@ button:disabled {
         <div class="form-group row">
           <div class="col-3">
             <label class="col-form-label" for="contractAddr">
-                contractAddr (contract address):
+              contractAddr
             </label>
           </div>
           <div class="input-group col">
@@ -167,7 +167,7 @@ button:disabled {
 
           <h2>Market creation</h2>
 
-          <form class="form-horizontal">
+          <form>
 
             <div class="form-group row">
               <label class="col-3 col-form-label" for="underlyingParts">
@@ -290,7 +290,7 @@ button:disabled {
                 <textarea class="form-control" style="font-size: 80%;" id="signatureFactHash" name="signatureFactHash" rows="5"></textarea>
               </div>
               <div class="col-2">
-                <button class="btn btn-secondary" id="signatureFactHashCalc" name="signatureFactHashCalc" value="1" disabled>calc. signatureFactHash</button>
+                <button class="btn btn-secondary" style="width: 100%" id="signatureFactHashCalc" name="signatureFactHashCalc" value="1" disabled>calc.<br/>signature-<br/>FactHash</button>
               </div>
             </div>
 
@@ -372,7 +372,7 @@ button:disabled {
               <div class="offset-1 col-3">
                 <label class="col-form-label" style="margin: 0; padding: 0;" for="marketHashCalculated">
                   -&gt; marketHash:
-                </label><br/>
+                </label>
                 <div class="text-muted small" style="padding-left: 1em;">
                   (calc. over <span class="badge badge-secondary">1</span>&#32;-&#32;<span class="badge badge-secondary">16</span> + signerAddr)
                 </div>
@@ -397,7 +397,7 @@ button:disabled {
 
           <h2>Market settlement</h2>
 
-          <form class="form-horizontal">
+          <form>
 
             <div class="form-group row">
               <label class="col-3 col-form-label" for="marketHash">
@@ -972,9 +972,9 @@ require(
           signerAddr: validateAddressOrThrowError(document.getElementById('signerAddr').value, '"signerAddr" invalid'),
           feeTaker0: validateAddressOrThrowError(document.getElementById('feeTaker0').value, '"feeTaker0" invalid'),
           feeTaker1: validateAddressOrThrowError(document.getElementById('feeTaker1').value, '"feeTaker1" invalid'),
-          transactionFee0: parseFloatOrThrowError(document.getElementById('transactionFee0Percent').value, digioptionsContracts.constants.atomicOptionPayoutWeiExp - 2, '"transactionFee0 x" invalid').toString(), // input in percent (float)
-          transactionFee1: parseFloatOrThrowError(document.getElementById('transactionFee1Percent').value, digioptionsContracts.constants.atomicOptionPayoutWeiExp - 2, '"transactionFee1" invalid').toString(), // input in percent (float)
-          transactionFeeSigner: parseFloatOrThrowError(document.getElementById('transactionFeeSignerPercent').value, digioptionsContracts.constants.atomicOptionPayoutWeiExp - 2, '"transactionFeeSigner" invalid').toString() // input in percent (float)
+          transactionFee0: parseFloatOrThrowError(document.getElementById('transactionFee0Percent').value, 4 - 2, '"transactionFee0 x" invalid').toString(), // input in percent (float)
+          transactionFee1: parseFloatOrThrowError(document.getElementById('transactionFee1Percent').value, 4 - 2, '"transactionFee1" invalid').toString(), // input in percent (float)
+          transactionFeeSigner: parseFloatOrThrowError(document.getElementById('transactionFeeSignerPercent').value, 4 - 2, '"transactionFeeSigner" invalid').toString() // input in percent (float)
         }
       );
     };
@@ -1389,7 +1389,7 @@ require(
           try {
 
             var contract = new web3.eth.Contract(
-              digioptionsContracts.digioptionsMarketListerAbi(),
+              digioptionsContracts.digioptionsMarketsAbi(),
               getContractAddr()
             );
 
