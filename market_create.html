@@ -1118,7 +1118,7 @@ require(
                 if (contractDescription.contractType !== digioptionsContracts.constants.contractType.DIGIOPTIONSMARKETS){
                   addItem('marketListerContract', contractAddr);
                 }
-                addItem('marketsContract', contractDescription.digiOptionsMarketsAddr);
+                addItem('marketsContract', contractDescription.marketsAddr);
               })
               .catch(function(/*err*/){
                 /* ignore error */
@@ -1228,7 +1228,7 @@ require(
                   // switch to marketsContracts
                   contract = new web3.eth.Contract(
                     digioptionsContracts.digioptionsMarketsAbi(),
-                    contractDescription.digiOptionsMarketsAddr
+                    contractDescription.marketsAddr
                   );
                 }
 
@@ -1417,7 +1417,7 @@ require(
                   // switch to marketsContracts
                   contract = new web3.eth.Contract(
                     digioptionsContracts.digioptionsMarketsAbi(),
-                    contractDescription.digiOptionsMarketsAddr
+                    contractDescription.marketsAddr
                   );
                 }
 
