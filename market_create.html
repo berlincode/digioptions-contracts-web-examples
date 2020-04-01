@@ -1437,7 +1437,7 @@ require(
                 }
 
                 if (parameters.checkFeeTaker1IsTransactionSigner){
-                  if (marketBaseData.feeTaker1.toLowerCase() !== account.toLowerCase()){
+                  if (marketData.marketBaseData.feeTaker1.toLowerCase() !== account.toLowerCase()){
                     throw new Error('"feeTaker1" should be your current account address');
                   }
                 }
