@@ -299,16 +299,17 @@ require(
       })
       .then(function(accounts){
         account = accounts[0];
-        return web3.eth.net.getNetworkType();
+        return web3.eth.net.getId();
       })
-      .then(function(network){
+      .then(function(netId){
+        var network = digioptionsTools.dataNetworksUtils.getNetworkByNetId(netId);
         var dataNetwork = dataNetworks[network];
-        setInputFormByID('network', network + (dataNetwork && dataNetwork.testnet ? ' (testnet)' : ''));
+        setInputFormByID('network', dataNetwork.name);
 
         if ((! dataNetwork) || (! dataNetwork.contractDescriptions) || (dataNetwork.contractDescriptions.length === 0)){
           var header = document.createElement('h6');
           header.setAttribute('class', 'dropdown-header');
-          header.textContent = 'No default contracts for network "' + network + '" known';
+          header.textContent = 'No default contracts for network "' + dataNetwork.name + '" known';
           document.getElementById('dropdownMarketListerList').appendChild(header);
         } else {
 
