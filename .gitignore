@@ -1,5 +1,4 @@
-node_modules
-README.html
-npm-debug.log
-_*
-dist
+/dist/
+/node_modules/
+/README.html
+/npm-debug.log
