@@ -263,15 +263,17 @@ require(
       web3 = new Web3(window.ethereum);
 
       window.ethereum.autoRefreshOnNetworkChange = false;
-      window.ethereum.on('networkChanged', function () {
-        location.reload();
-      });
-      window.ethereum.on('accountsChanged', function (/*accounts*/) {
-        location.reload();
-      });
+      if (window.ethereum.on){
+        window.ethereum.on('networkChanged', function () {
+          location.reload();
+        });
+        window.ethereum.on('accountsChanged', function (/*accounts*/) {
+          location.reload();
+        });
+      }
 
       web3enable = window.ethereum.enable()
-        .catch(function(err){
+        .catch(function(/*err*/){
           throw new Error('failed to connect to ethereum provider');
         });
     } else {
