@@ -184,7 +184,7 @@ require(
       // parse browser's hash/query-string append parameters and try to fill out form input values
       // e.g.
       //  .../market_create.html#?contractAddr=0x0Eb7e02ED6C8a55f72551E8677eE3bbB25263016&signerPrivateKey=0x728c08b6404f3da74525183e0cf444483352e8f13a48ee40ece9185306ec7419
-      //  .../market_create.html#?ethProvider=ws%3A%2F%2F192.168.2.116%3A12345
+      //  .../market_create.html#?ethProviderWs=ws%3A%2F%2F192.168.2.116%3A12345
 
       var query = window.location.hash.replace(/^#?\??/, '');
       var vars = query.split('&'); // TODO amp?
@@ -204,8 +204,8 @@ require(
     var web3;
     var web3enable;
 
-    if (parameters.ethProvider){
-      web3 = new Web3(parameters.ethProvider);
+    if (parameters.ethProviderWs){
+      web3 = new Web3(parameters.ethProviderWs);
       web3enable = Promise.resolve(null);
       if (parameters.privateKey){
         web3.eth.accounts.wallet.add(parameters.privateKey);
@@ -215,15 +215,17 @@ require(
       web3 = new Web3(window.ethereum);
 
       window.ethereum.autoRefreshOnNetworkChange = false;
-      window.ethereum.on('networkChanged', function () {
-        location.reload();
-      });
-      window.ethereum.on('accountsChanged', function (/*accounts*/) {
-        location.reload();
-      });
+      if (window.ethereum.on){
+        window.ethereum.on('networkChanged', function () {
+          location.reload();
+        });
+        window.ethereum.on('accountsChanged', function (/*accounts*/) {
+          location.reload();
+        });
+      }
 
       web3enable = window.ethereum.enable()
-        .catch(function(err){
+        .catch(function(/*err*/){
           throw new Error('failed to connect to ethereum provider');
         });
     } else {
@@ -256,7 +258,7 @@ require(
         version: {major: 0, minor: 0, bugfix: 0}, // TODO
         abi: digioptionsMetaAbi(),
         bin: digioptionsMetaBin()
-        }
+      }
     };
 
     /* add contracts to select */
@@ -281,16 +283,17 @@ require(
 
     web3enable
       .then(function(){
-        return web3.eth.net.getNetworkType();
+        return web3.eth.net.getId();
       })
-      .then(function(network){
+      .then(function(netId){
+        var network = digioptionsTools.dataNetworksUtils.getNetworkByNetId(netId);
         var dataNetwork = dataNetworks[network];
-        setInputFormByID('network', network + (dataNetwork && dataNetwork.testnet ? ' (testnet)' : ''));
+        setInputFormByID('network', dataNetwork.name);
 
         if ((! dataNetwork) || (! dataNetwork.contractDescriptions)){
           var header = document.createElement('h6');
           header.setAttribute('class', 'dropdown-header');
-          header.textContent = 'No default contracts for network "' + network + '" known';
+          header.textContent = 'No default contracts for network "' + dataNetwork.name + '" known';
           document.getElementById('dropdownContractList').appendChild(header);
         } else {
 
