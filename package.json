@@ -1,6 +1,6 @@
 {
   "name": "digioptions-contracts-web-examples",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "examples to create and settle markets for digioptions.com",
   "homepage": "https://github.com/berlincode/digioptions-contracts-web-examples",
   "license": "MIT",
