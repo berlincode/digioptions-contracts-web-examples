@@ -237,7 +237,7 @@ require(
 
       var query = window.location.hash.replace(/^#?\??/, '');
       var vars = query.split('&'); // TODO amp?
-      var params = [];
+      var params = {};
       for (var i = 0; i < vars.length; i++) {
         var pair = vars[i].split('=');
         if (pair.length === 2){
@@ -307,12 +307,13 @@ require(
       .then(function(netId){
         var network = digioptionsTools.dataNetworksUtils.getNetworkByNetId(netId);
         var dataNetwork = dataNetworks[network];
-        setInputFormByID('network', dataNetwork.name);
+        var networkName = dataNetwork? dataNetwork.name : 'unknown';
+        setInputFormByID('network', networkName);
 
         if ((! dataNetwork) || (! dataNetwork.contractDescriptions) || (dataNetwork.contractDescriptions.length === 0)){
           var header = document.createElement('h6');
           header.setAttribute('class', 'dropdown-header');
-          header.textContent = 'No default contracts for network "' + dataNetwork.name + '" known';
+          header.textContent = 'No default contracts for network "' + networkName + '" known';
           document.getElementById('dropdownMarketListerList').appendChild(header);
         } else {
 
