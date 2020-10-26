@@ -9,7 +9,7 @@
     "email": "elastic.code@gmail.com"
   },
   "scripts": {
-    "serve": "http-server . -a 127.0.0.1 -p 8010 -c-1",
+    "serve": "ws --hostname 127.0.0.1 --port 8888",
     "eslint": "eslint ./*.html"
   },
   "files": [
@@ -42,6 +42,6 @@
     "eslint": "^7.1.0",
     "eslint-plugin-html": "^6.0.0",
     "eslint-plugin-ie11": "^1.0.0",
-    "http-server": "~0.12.0"
+    "local-web-server": "^4.2.1"
   }
 }
