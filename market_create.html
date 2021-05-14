@@ -100,11 +100,13 @@ button:disabled {
               contractAddr
             </label>
           </div>
-          <div class="input-group col">
-            <input class="form-control" type="text" id="contractAddr" name="contractAddr" placeholder="0x..." value="" />
-            <div class="input-group-append">
-              <button id="dropdownContractListBtn" type="button" class="btn btn-outline-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" disabled>default contracts <span class="caret"></span></button>
-              <div class="dropdown-menu dropdown-menu-right" id="dropdownContractList">
+          <div class="col">
+            <div class="input-group">
+              <input class="form-control" type="text" id="contractAddr" name="contractAddr" placeholder="0x..." value="" />
+              <div class="input-group-append">
+                <button id="dropdownContractListBtn" type="button" class="btn btn-outline-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" disabled>default contracts <span class="caret"></span></button>
+                <div class="dropdown-menu dropdown-menu-right" id="dropdownContractList">
+                </div>
               </div>
             </div>
           </div>
@@ -114,13 +116,15 @@ button:disabled {
           <label class="col-3 col-form-label" for="signerPrivateKey">
             signerPrivateKey (private!):
           </label>
-          <div class="input-group col">
-            <input class="form-control" type="password" id="signerPrivateKey" name="signerPrivateKey" data-toggle="password" placeholder="" value="" />
-            <div class="input-group-append">
-              <button type="button" class="btn btn-outline-secondary passwordToggle" value="1"><i class="fa fa-eye"></i></button>
-            </div>
-            <div class="input-group-append">
-              <button type="button" class="btn btn-outline-secondary" id="createSigningKey" name="createSigningKey" value="1" disabled>create private key</button>
+          <div class="col">
+            <div class="input-group">
+              <input class="form-control" type="password" id="signerPrivateKey" name="signerPrivateKey" data-toggle="password" placeholder="" value="" />
+              <div class="input-group-append">
+                <button type="button" class="btn btn-outline-secondary passwordToggle" value="1"><i class="fa fa-eye"></i></button>
+              </div>
+              <div class="input-group-append">
+                <button type="button" class="btn btn-outline-secondary" id="createSigningKey" name="createSigningKey" value="1" disabled>create private key</button>
+              </div>
             </div>
           </div>
         </div>
@@ -134,10 +138,12 @@ button:disabled {
               (calc. from signerPrivateKey)
             </div>
           </div>
-          <div class="input-group col" style="padding-top: 3px; padding-bottom: 3px;">
-            <input class="form-control" type="text" id="signerAddr" name="signerAddr" placeholder="" value="" disabled/>
-            <div class="input-group-append">
-              <button type="button" class="btn btn-outline-secondary js-tooltip js-copy" data-toggle="tooltip" data-placement="top" data-copy="signerAddr" title="Copy to clipboard">copy</button>
+          <div class="col">
+            <div class="input-group" style="padding-top: 3px; padding-bottom: 3px;">
+              <input class="form-control" type="text" id="signerAddr" name="signerAddr" placeholder="" value="" disabled/>
+              <div class="input-group-append">
+                <button type="button" class="btn btn-outline-secondary js-tooltip js-copy" data-toggle="tooltip" data-placement="top" data-copy="signerAddr" title="Copy to clipboard">copy</button>
+              </div>
             </div>
           </div>
         </div>
@@ -201,11 +207,13 @@ button:disabled {
                 <span class="badge badge-primary" style="width: 2em;">4</span>
                 config.MarketType:
               </label>
-              <div class="input-group col">
-                <select class="form-control" id="configMarketType" name="configMarketType">
-                  <option value="0">NAMED (0)</option>
-                  <option value="1" selected>STRIKED (1)</option>
-                </select>
+              <div class="col">
+                <div class="input-group">
+                  <select class="form-control" id="configMarketType" name="configMarketType">
+                    <option value="0">NAMED (0)</option>
+                    <option value="1" selected>STRIKED (1)</option>
+                  </select>
+                </div>
               </div>
             </div>
             <div class="form-group row">
@@ -213,11 +221,13 @@ button:disabled {
                 <span class="badge badge-primary" style="width: 2em;">5</span>
                 config.IntervalType:
               </label>
-              <div class="input-group col">
-                <select class="form-control" id="configIntervalType" name="configIntervalType">
-                  <option value="0">UNUSED (0)</option>
-                  <option value="1" selected>USED (1)</option>
-                </select>
+              <div class="col">
+                <div class="input-group">
+                  <select class="form-control" id="configIntervalType" name="configIntervalType">
+                    <option value="0">UNUSED (0)</option>
+                    <option value="1" selected>USED (1)</option>
+                  </select>
+                </div>
               </div>
             </div>
             <div class="form-group row">
@@ -225,10 +235,12 @@ button:disabled {
                 <span class="badge badge-primary" style="width: 2em;">6</span>
                 marketCategory:
               </label>
-              <div class="input-group col">
-                <select class="form-control" id="marketCategory" name="marketCategory">
-                    <option value="" selected> -- no selection -- </option>
-                </select>
+              <div class="col">
+                <div class="input-group">
+                  <select class="form-control" id="marketCategory" name="marketCategory">
+                      <option value="" selected> -- no selection -- </option>
+                  </select>
+                </div>
               </div>
             </div>
             <div class="form-group row">
@@ -268,10 +280,12 @@ button:disabled {
                   (calc. over <span class="badge badge-secondary">1</span>&#32;-&#32;<span class="badge badge-secondary">9</span>)
                 </div>
               </div>
-              <div class="input-group col" style="padding-top: 3px; padding-bottom: 3px;">
-                <input class="form-control" type="text" id="factHash" name="factHash" value="" disabled />
-                <div class="input-group-append">
-                  <button type="button" class="btn btn-outline-secondary js-tooltip js-copy" data-toggle="tooltip" data-placement="top" data-copy="factHash" title="Copy to clipboard">copy</button>
+              <div class="col">
+                <div class="input-group" style="padding-top: 3px; padding-bottom: 3px;">
+                  <input class="form-control" type="text" id="factHash" name="factHash" value="" disabled />
+                  <div class="input-group-append">
+                    <button type="button" class="btn btn-outline-secondary js-tooltip js-copy" data-toggle="tooltip" data-placement="top" data-copy="factHash" title="Copy to clipboard">copy</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -299,12 +313,14 @@ button:disabled {
                 <span class="badge badge-primary" style="width: 2em;">10</span>
                 marketInterval:
               </label>
-              <div class="input-group col">
-                <select class="form-control" id="marketInterval" name="marketInterval">
-                    <option value="" selected> -- no selection -- </option>
-                </select>
-                <div class="input-group-append">
-                  <button type="button" class="btn btn-outline-secondary" id="calcMarketInterval" name="calcMarketInterval" value="1" disabled>calc marketInterval</button>
+              <div class="col">
+                <div class="input-group">
+                  <select class="form-control" id="marketInterval" name="marketInterval">
+                      <option value="" selected> -- no selection -- </option>
+                  </select>
+                  <div class="input-group-append">
+                    <button type="button" class="btn btn-outline-secondary" id="calcMarketInterval" name="calcMarketInterval" value="1" disabled>calc marketInterval</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -331,10 +347,12 @@ button:disabled {
                 <span class="badge badge-primary" style="width: 2em;">13</span>
                 feeTaker0: (address)
               </label>
-              <div class="input-group col">
-                <input class="form-control" type="text" id="feeTaker0" name="feeTaker0" value="" placeholder="0x..."/>
-                <div class="input-group-append">
-                  <button type="button" class="btn btn-outline-secondary" id="setFeeTaker0" name="setFeeTaker0" value="1" disabled>marketLister owner</button>
+              <div class="col">
+                <div class="input-group">
+                  <input class="form-control" type="text" id="feeTaker0" name="feeTaker0" value="" placeholder="0x..."/>
+                  <div class="input-group-append">
+                    <button type="button" class="btn btn-outline-secondary" id="setFeeTaker0" name="setFeeTaker0" value="1" disabled>marketLister owner</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -352,10 +370,12 @@ button:disabled {
                 <span class="badge badge-primary" style="width: 2em;">15</span>
                 feeTaker1: (address)
               </label>
-              <div class="input-group col">
-                <input class="form-control" type="text" id="feeTaker1" name="feeTaker1" value="" placeholder="0x..."/>
-                <div class="input-group-append">
-                  <button type="button" class="btn btn-outline-secondary" id="setFeeTaker1" name="setFeeTaker1" value="1" disabled>your own address</button>
+              <div class="col">
+                <div class="input-group">
+                  <input class="form-control" type="text" id="feeTaker1" name="feeTaker1" value="" placeholder="0x..."/>
+                  <div class="input-group-append">
+                    <button type="button" class="btn btn-outline-secondary" id="setFeeTaker1" name="setFeeTaker1" value="1" disabled>your own address</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -377,10 +397,12 @@ button:disabled {
                   (calc. over <span class="badge badge-secondary">1</span>&#32;-&#32;<span class="badge badge-secondary">16</span> + signerAddr)
                 </div>
               </div>
-              <div class="input-group col" style="padding-top: 3px; padding-bottom: 3px;">
-                <input class="form-control" type="text" id="marketHashCalculated" name="marketHashCalculated" value="" disabled />
-                <div class="input-group-append">
-                  <button type="button" class="btn btn-outline-secondary js-tooltip js-copy" data-toggle="tooltip" data-placement="top" data-copy="marketHashCalculated" title="Copy to clipboard">copy</button>
+              <div class="col">
+                <div class="input-group" style="padding-top: 3px; padding-bottom: 3px;">
+                  <input class="form-control" type="text" id="marketHashCalculated" name="marketHashCalculated" value="" disabled />
+                  <div class="input-group-append">
+                    <button type="button" class="btn btn-outline-secondary js-tooltip js-copy" data-toggle="tooltip" data-placement="top" data-copy="marketHashCalculated" title="Copy to clipboard">copy</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -443,12 +465,14 @@ button:disabled {
                     <span class="badge badge-primary" style="width: 2em;">4</span>
                     config.MarketType:
                   </label>
-                  <div class="input-group col">
-                    <select class="form-control" id="configMarketType2" name="configMarketType2" disabled>
-                      <option value="" selected> -- no selection -- </option>
-                      <option value="0">NAMED (0)</option>
-                      <option value="1">STRIKED (1)</option>
-                    </select>
+                  <div class="col">
+                    <div class="input-group">
+                      <select class="form-control" id="configMarketType2" name="configMarketType2" disabled>
+                        <option value="" selected> -- no selection -- </option>
+                        <option value="0">NAMED (0)</option>
+                        <option value="1">STRIKED (1)</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
                 <div class="form-group row">
@@ -456,12 +480,14 @@ button:disabled {
                     <span class="badge badge-primary" style="width: 2em;">5</span>
                     config.IntervalType:
                   </label>
-                  <div class="input-group col">
-                    <select class="form-control" id="configIntervalType2" name="configIntervalType2" disabled>
-                      <option value="" selected> -- no selection -- </option>
-                      <option value="0">UNUSED (0)</option>
-                      <option value="1">USED (1)</option>
-                    </select>
+                  <div class="col">
+                    <div class="input-group">
+                      <select class="form-control" id="configIntervalType2" name="configIntervalType2" disabled>
+                        <option value="" selected> -- no selection -- </option>
+                        <option value="0">UNUSED (0)</option>
+                        <option value="1">USED (1)</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
                 <div class="form-group row">
@@ -469,10 +495,12 @@ button:disabled {
                     <span class="badge badge-primary" style="width: 2em;">6</span>
                     marketCategory:
                   </label>
-                  <div class="input-group col">
-                    <select class="form-control" id="marketCategory2" name="marketCategory2" disabled>
-                        <option value="" selected> -- no selection -- </option>
-                    </select>
+                  <div class="col">
+                    <div class="input-group">
+                      <select class="form-control" id="marketCategory2" name="marketCategory2" disabled>
+                          <option value="" selected> -- no selection -- </option>
+                      </select>
+                    </div>
                   </div>
                 </div>
                 <div class="form-group row">
@@ -518,10 +546,12 @@ button:disabled {
                   (calc. over <span class="badge badge-secondary">1</span>&#32;-&#32;<span class="badge badge-secondary">9</span>)
                 </div>
               </div>
-              <div class="input-group col" style="padding-top: 3px; padding-bottom: 3px;">
-                <input class="form-control" type="text" id="factHash2" name="factHash2" value="" disabled />
-                <div class="input-group-append">
-                  <button type="button" class="btn btn-outline-secondary js-tooltip js-copy" data-toggle="tooltip" data-placement="top" data-copy="factHash2" title="Copy to clipboard">copy</button>
+              <div class="col">
+                <div class="input-group" style="padding-top: 3px; padding-bottom: 3px;">
+                  <input class="form-control" type="text" id="factHash2" name="factHash2" value="" disabled />
+                  <div class="input-group-append">
+                    <button type="button" class="btn btn-outline-secondary js-tooltip js-copy" data-toggle="tooltip" data-placement="top" data-copy="factHash2" title="Copy to clipboard">copy</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -653,7 +683,7 @@ require.config({
   paths: {
     'web3': 'assets/js/web3.min',
     'web3-utils': 'assets/js/web3-utils.min',
-    'eth-lib-account': 'assets/js/eth-lib-account.min',
+    'eth-lib/lib/account': 'assets/js/eth-lib-account.min',
     'xhr-request-promise': 'node_modules/digioptions-tools.js/js/xhr-request-promise.min'
   },
   packages: [
@@ -869,8 +899,8 @@ require(
       return addr;
     };
 
-    var parseJsonArray = function(jsonString, typeString) {
-      /* this function always returns an array of json parsable strings */
+    var checkJsonArrayType = function(jsonString, typeString) {
+      /* this function checks the type of all elements of the array contained in a json parsable strings */
       var array;
       try {
         array = JSON.parse(jsonString);
@@ -885,6 +915,9 @@ require(
       if (array.some(function(val){return typeof(val) !== typeString;})){
         throw new Error('array element of invalid type');
       }
+    };
+    var parseJsonArrayNumber = function(jsonString) {
+      /* this function splits a json string containing numbers into its elements (as strings) without converting them */
 
       // remove brackets (and white spaces)
       jsonString = jsonString.replace(/^\s*\[\s*/, '').replace(/\s*\]\s*$/, '');
@@ -904,10 +937,12 @@ require(
     var getIntervalTypeUsed = function(){return Boolean(parseIntOrThrowError(document.getElementById('configIntervalType').value, '"configIntervalType" invalid'));};
 
     var getNamedRanges = function(){
+      var jsonString = document.getElementById('namedRanges').value;
       try {
-        return parseJsonArray(document.getElementById('namedRanges').value, 'string').map(
-          function(jsonStr){
-            return factsigner.stringToNamedRange(JSON.parse(jsonStr));
+        checkJsonArrayType(jsonString, 'string');
+        return JSON.parse(jsonString).map(
+          function(elm){
+            return factsigner.stringToNamedRange(elm);
           }
         );
       } catch (err){
@@ -916,10 +951,12 @@ require(
     };
 
     var getStrikesOrNamedRangesAsNamedRanges = function(){
+      var jsonString = document.getElementById('strikes').value;
       try {
-        return parseJsonArray(document.getElementById('strikes').value, 'string').map(
-          function(jsonStr){
-            return factsigner.stringToNamedRange(JSON.parse(jsonStr));
+        checkJsonArrayType(jsonString, 'string');
+        return JSON.parse(jsonString).map(
+          function(elm){
+            return factsigner.stringToNamedRange(elm);
           }
         );
       } catch (err){
@@ -930,7 +967,9 @@ require(
     var getStrikesOrNamedRangesAsStrikes = function(){
       var baseUnitExp = getBaseUnitExp(); // TODO wrong error
       try {
-        return parseJsonArray(document.getElementById('strikes').value, 'number').map(
+        var jsonString = document.getElementById('strikes').value;
+        checkJsonArrayType(jsonString, 'number');
+        return parseJsonArrayNumber(jsonString).map(
           function(floatStr){
             return factsigner.parseFloatToBn(floatStr, baseUnitExp).toString();
           }
@@ -941,11 +980,9 @@ require(
     };
 
     var getFacts = function(){
-      var underlyingParts = parseJsonArray(document.getElementById('underlyingParts').value, 'string').map(
-        function(jsonStr){
-          return JSON.parse(jsonStr);
-        }
-      );
+      var jsonString = document.getElementById('underlyingParts').value;
+      checkJsonArrayType(jsonString, 'string');
+      var underlyingParts = JSON.parse(jsonString);
       return {
         underlyingString: underlyingParts.join('\0'),
         expirationDatetime: getExpirationDatetime(),
@@ -1364,8 +1401,8 @@ require(
                 )
                   .send({
                     from: account,
-                    //gas: 400000 // TODO ethereum mainnet
-                    gas: 600000 // TODO thundercore mainnet
+                    gas: 400000 // TODO ethereum mainnet
+                    //gas: 1000000 // TODO thundercore mainnet ~900000
                   })
                   .on('transactionHash', function(/*transactionHash*/){
                     modal_success(
@@ -1470,7 +1507,8 @@ require(
                 )
                   .send({
                     from: account,
-                    gas: 200000 // TODO variable ~ 28760 // only required for ganache and without metamask?
+                    gas: 200000 // TODO variable ethereum mainnet ~ 28760 // only required for ganache and without metamask?
+                    //gas: 700000 // TODO thundercore mainnet ~640000
                   })
                   .on('transactionHash', function(/*transactionHash*/){
                     modal_success('settlement transaction sent');
