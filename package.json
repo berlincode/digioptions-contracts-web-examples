@@ -29,7 +29,7 @@
     "ethereum"
   ],
   "dependencies": {
-    "bootstrap": "~4.5.3",
+    "bootstrap": "~4.6.0",
     "digioptions-contracts.js": "git+https://github.com/berlincode/digioptions-contracts.js.git",
     "digioptions-tools.js": "git+https://github.com/berlincode/digioptions-tools.js.git",
     "factsigner": "git+https://github.com/berlincode/factsigner.git",
