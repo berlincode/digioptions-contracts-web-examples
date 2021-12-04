@@ -367,7 +367,7 @@ require(
 
         document.getElementById('readBtn').onclick = function(evt){
           evt.preventDefault();
-          console.log('click read');
+          //console.log('click read');
           try {
             var contractAddr = getContractAddr();
             var contract = new web3.eth.Contract(
@@ -415,7 +415,7 @@ require(
 
         document.getElementById('setSignerBtn').onclick = function(evt){
           evt.preventDefault();
-          console.log('click write');
+          //console.log('click write');
           try {
             var contractAddr = getContractAddr();
             var contract = new web3.eth.Contract(
