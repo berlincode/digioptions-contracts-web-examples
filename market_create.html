@@ -1019,6 +1019,29 @@ require(
       );
     };
 
+    var getValue = function (){
+      var isStriked = Boolean(parseIntOrThrowError(document.getElementById('configMarketType2').value, '"configMarketType" invalid'));
+
+      var value;
+      if (isStriked){
+        /* striked market */
+        var baseUnitExp = parseIntOrThrowError(document.getElementById('baseUnitExp2').value, '"baseUnitExp" invalid');
+        value = parseFloatOrThrowError(document.getElementById('finalValue').value, baseUnitExp, '"finalValue" invalid');
+      } else {
+        /* named market */
+// TODO is finalValue int128 like namedRange or int256?
+        value = factsigner.stringToNamedRange(parseJsonString(document.getElementById('finalValue').value, '"finalValue" must be a (json) string'));
+// TODO check value in namedRanges!
+      }
+      return value;
+    };
+
+    var getMarketHash = function (){
+      // TODO validate
+      return document.getElementById('marketHash').value
+        .replace(/[^\x20-\x7E]/g, ''); /* remove non-visible characters (from copying hash into input field) */
+    };
+
     var updateSignerAddress = function(){
       if ((parameters.signatureFactHash) || (parameters.signatureFinal))
         return;
@@ -1221,19 +1244,9 @@ require(
         document.getElementById('signatureFinalCalc').onclick = function(evt){
           evt.preventDefault();
           try {
-            var isStriked = Boolean(parseIntOrThrowError(document.getElementById('configMarketType2').value, '"configMarketType" invalid'));
 
-            var value;
-            if (isStriked){
-              /* striked market */
-              var baseUnitExp = parseIntOrThrowError(document.getElementById('baseUnitExp2').value, '"baseUnitExp" invalid');
-              value = parseFloatOrThrowError(document.getElementById('finalValue').value, baseUnitExp, '"finalValue" invalid');
-            } else {
-              /* named market */
-// TODO is finalValue int128 like namedRange or int256?
-              value = factsigner.stringToNamedRange(parseJsonString(document.getElementById('finalValue').value, '"finalValue" must be a (json) string'));
-// TODO check value in namedRanges!
-            }
+            var value = getValue();
+
             var hash = factsigner.settlementHash(
               document.getElementById('factHash2').value,
               value,
@@ -1255,7 +1268,7 @@ require(
               contractAddr
             );
 
-            var marketHash = document.getElementById('marketHash').value;
+            var marketHash = getMarketHash();
 
             contract.methods.getContractInfo().call()
               .then(function(contractInfo){
@@ -1388,6 +1401,16 @@ require(
                   throw new Error('"marketInterval" invalid (expected marketInterval: ' + marketInterval + ')');
                 }
 
+                return contract.methods.createMarket(
+                  marketBaseData,
+                  false, /* testMarket */
+                  signature /* signature */
+                )
+                  .estimateGas({
+                    from: account,
+                  });
+              })
+              .then(function(gasAmount){
                 var marketUrl = digioptionsTools.dataNetworksUtils.getDigioptionsUrl(
                   'pageMarket',
                   {network: network, contractAddr: getContractAddr(), marketHash: marketHash},
@@ -1401,8 +1424,7 @@ require(
                 )
                   .send({
                     from: account,
-                    gas: 400000 // TODO ethereum mainnet
-                    //gas: 1000000 // TODO thundercore mainnet ~900000
+                    gas: Math.round(gasAmount * 1.2)
                   })
                   .on('transactionHash', function(/*transactionHash*/){
                     modal_success(
@@ -1437,7 +1459,7 @@ require(
               getContractAddr()
             );
 
-            var marketHash = document.getElementById('marketHash').value; // TODO validate
+            var marketHash = getMarketHash();
 
             var signature;
             try {
@@ -1486,17 +1508,22 @@ require(
                   }
                 }
 
-// TODO duplicate
-                var isStriked = Boolean(parseIntOrThrowError(document.getElementById('configMarketType2').value, '"configMarketType" invalid'));
-                var value;
-                if (isStriked){
-                  /* striked market */
-                  var baseUnitExp = parseIntOrThrowError(document.getElementById('baseUnitExp2').value, '"baseUnitExp" invalid');
-                  value = parseFloatOrThrowError(document.getElementById('finalValue').value, baseUnitExp, '"finalValue" invalid');
-                } else {
-                  /* named market */
-                  value = factsigner.stringToNamedRange(parseJsonString(document.getElementById('finalValue').value, '"finalValue" must be a (json) string'));
-                }
+                var value = getValue();
+
+                return contract.methods.settlement(
+                  marketHash,
+                  signature,
+                  value.toString(),
+                  [], // users // TODO
+                  [] // TODO offerHash
+                )
+                  .estimateGas({
+                    from: account,
+                  });
+              })
+              .then(function(gasAmount){
+
+                var value = getValue();
 
                 return contract.methods.settlement(
                   marketHash,
@@ -1507,8 +1534,7 @@ require(
                 )
                   .send({
                     from: account,
-                    gas: 200000 // TODO variable ethereum mainnet ~ 28760 // only required for ganache and without metamask?
-                    //gas: 700000 // TODO thundercore mainnet ~640000
+                    gas: Math.round(gasAmount * 1.2)
                   })
                   .on('transactionHash', function(/*transactionHash*/){
                     modal_success('settlement transaction sent');
