@@ -319,16 +319,8 @@ require(
               contractAddr
             );
 
-            contract.methods.getContractInfo().call()
-              .then(function(contractInfo){
-                if (! contractInfo){
-                  throw new Error('reading contract info/version failed');
-                }
-                var contractDescription = digioptionsContracts.contractInfoToContractDescription(
-                  web3,
-                  contractAddr,
-                  contractInfo
-                );
+            digioptionsContracts.getContractDescription(web3, contract)
+              .then(function(contractDescription){
                 addItem('market: ' + contractDescription.marketsAddr, contractDescription.marketsAddr);
               })
               .catch(function(/*err*/){
