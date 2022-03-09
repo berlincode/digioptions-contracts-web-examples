@@ -10,7 +10,7 @@
   },
   "scripts": {
     "serve": "ws --hostname 127.0.0.1 --port 8888",
-    "eslint": "eslint ./*.html"
+    "eslint": "eslint *.cjs ./*.html"
   },
   "files": [
     "assets/",
@@ -41,7 +41,6 @@
   "devDependencies": {
     "eslint": "^8.4.0",
     "eslint-plugin-html": "^6.0.0",
-    "eslint-plugin-ie11": "^1.0.0",
     "local-web-server": "^5.0.0"
   }
 }
