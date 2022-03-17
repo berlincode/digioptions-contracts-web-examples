@@ -190,7 +190,7 @@ require.config({
     {
       name: 'digioptions-contracts.js',
       location: 'node_modules/digioptions-contracts.js',
-      main: 'js/index.js'
+      main: 'dist/umd/index.js'
     },
     {
       name: 'strophe.js',
@@ -205,9 +205,9 @@ require(
     'web3',
     'factsigner',
     'digioptions-contracts.js',
-    'digioptions-contracts.js/js/digioptions_markets_bin',
-    'digioptions-contracts.js/js/digioptions_market_lister_bin',
-    'digioptions-contracts.js/js/digioptions_meta_bin',
+    'digioptions-contracts.js/dist/umd/digioptions_markets_bin',
+    'digioptions-contracts.js/dist/umd/digioptions_market_lister_bin',
+    'digioptions-contracts.js/dist/umd/digioptions_meta_bin',
     'digioptions-tools.js'
   ],
   function(Web3, factsigner, digioptionsContracts, digioptionsMarketsBin, digioptionsMarketListerBin, digioptionsMetaBin, digioptionsTools){
