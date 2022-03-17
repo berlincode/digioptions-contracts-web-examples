@@ -1165,13 +1165,9 @@ require(
           if (dataNetwork){
             for (var contractDescriptionIdx in dataNetwork.contractDescriptions){
               var contractAddr = dataNetwork.contractDescriptions[contractDescriptionIdx].addr;
-              var contract = new web3.eth.Contract(
-                digioptionsContracts.digioptionsMarketsAbi(),
-                contractAddr
-              );
 
               // TODO set one contract as default ?
-              digioptionsContracts.getContractDescription(web3, contract)
+              digioptionsContracts.getContractInfo(web3, contractAddr)
                 .then(function(contractDescription){
                   if (contractDescription.contractType !== digioptionsContracts.constants.contractType.DIGIOPTIONSMARKETS){
                     addItem('marketListerContract', contractAddr);
@@ -1255,21 +1251,15 @@ require(
           evt.preventDefault();
           try {
             var contractAddr = getContractAddr();
-            var contract = new web3.eth.Contract(
-              digioptionsContracts.digioptionsMarketListerAbi(),
-              contractAddr
-            );
-
             var marketHash = getMarketHash();
+            var contract;
 
-            digioptionsContracts.getContractDescription(web3, contract)
+            digioptionsContracts.getContractInfo(web3, contractAddr)
               .then(function(contractDescription){
+                contract = contractDescription.contractMarketLister || contractDescription.contractMarkets;
                 if (contractDescription.contractType !== digioptionsContracts.constants.contractType.DIGIOPTIONSMARKETS){
-                  // switch to marketsContracts
-                  contract = new web3.eth.Contract(
-                    digioptionsContracts.digioptionsMarketsAbi(),
-                    contractDescription.marketsAddr
-                  );
+                  // always use marketsContracts
+                  contract = contractDescription.contractMarkets;
                 }
 
                 return contract.methods.getMarketDataByMarketHash(addrZero, marketHash).call();
@@ -1312,13 +1302,9 @@ require(
           evt.preventDefault();
           try {
 
-            var contract = new web3.eth.Contract(
-              digioptionsContracts.digioptionsMarketListerAbi(),
-              getContractAddr()
-            );
-
             var marketBaseData = getMarketBaseData();
             var marketHash = digioptionsContracts.marketHash(marketBaseData);
+            var contract;
 
             var signature;
             try {
@@ -1337,8 +1323,9 @@ require(
               }
             }
 
-            digioptionsContracts.getContractDescription(web3, contract)
+            digioptionsContracts.getContractInfo(web3, getContractAddr())
               .then(function(contractDescription){
+                contract = contractDescription.contractMarketLister || contractDescription.contractMarkets;
 
                 if (contractDescription.contractType !== digioptionsContracts.constants.contractType.DIGIOPTIONSMARKETS){
                   return contract.methods.getMarketListerInfo().call();
@@ -1428,13 +1415,8 @@ require(
           evt.preventDefault();
           try {
 
-            var contract = new web3.eth.Contract(
-              digioptionsContracts.digioptionsMarketsAbi(),
-              getContractAddr()
-            );
-
             var marketHash = getMarketHash();
-
+            var contract;
             var signature;
             try {
               // TODO add support for named values
@@ -1443,14 +1425,12 @@ require(
               throw new Error('"signatureFinal" invalid');
             }
 
-            digioptionsContracts.getContractDescription(web3, contract)
+            digioptionsContracts.getContractInfo(web3, getContractAddr())
               .then(function(contractDescription){
+                contract = contractDescription.contractMarketLister || contractDescription.contractMarkets;
                 if (contractDescription.contractType !== digioptionsContracts.constants.contractType.DIGIOPTIONSMARKETS){
-                  // switch to marketsContracts
-                  contract = new web3.eth.Contract(
-                    digioptionsContracts.digioptionsMarketsAbi(),
-                    contractDescription.marketsAddr
-                  );
+                  // always use marketsContracts
+                  contract = contractDescription.contractMarkets;
                 }
 
                 return contract.methods.getMarketDataByMarketHash(addrZero, marketHash).call();
@@ -1521,12 +1501,12 @@ require(
           evt.preventDefault();
           try {
             var contractAddr = getContractAddr();
-            var contract = new web3.eth.Contract(
-              digioptionsContracts.digioptionsMarketListerAbi(),
-              contractAddr
-            );
-            digioptionsContracts.getContractDescription(web3, contract)
+            var contract;
+
+            digioptionsContracts.getContractInfo(web3, contractAddr)
               .then(function(contractDescription){
+                contract = contractDescription.contractMarketLister || contractDescription.contractMarkets;
+
                 if (contractDescription.contractType !== digioptionsContracts.constants.contractType.DIGIOPTIONSMARKETLISTER){
                   throw new Error('The given contract address:\r\n' + contractAddr + '\r\n is not a marketLister contract.');
                 }

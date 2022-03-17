@@ -339,12 +339,8 @@ require(
 
           for (var contractDescriptionIdx in dataNetwork.contractDescriptions){
             var contractAddr = dataNetwork.contractDescriptions[contractDescriptionIdx].addr;
-            var contract = new web3.eth.Contract(
-              digioptionsContracts.digioptionsMarketsAbi(),
-              contractAddr
-            );
 
-            digioptionsContracts.getContractDescription(web3, contract)
+            digioptionsContracts.getContractInfo(web3, contractAddr)
               .then(function(contractDescription){
                 if (contractDescription.contractType !== digioptionsContracts.constants.contractType.DIGIOPTIONSMARKETS){
                   addItem('marketListerContract', contractAddr);
@@ -362,14 +358,12 @@ require(
           //console.log('click read');
           try {
             var contractAddr = getContractAddr();
-            var contract = new web3.eth.Contract(
-              digioptionsContracts.digioptionsMarketListerAbi(),
-              contractAddr
-            );
+            var contract;
 
-            digioptionsContracts.getContractDescription(web3, contract)
+            digioptionsContracts.getContractInfo(web3, contractAddr)
               .then(function(contractDescription){
-                //console.log('contractDescription', contractDescription);
+                contract = contractDescription.contractMarketLister || contractDescription.contractMarkets;
+
                 if (contractDescription.contractType === digioptionsContracts.constants.contractType.DIGIOPTIONSMARKETS){
                   throw new Error('The given contract address:\r\n' + contractAddr + '\r\n is not a marketLister contract.');
                 }
@@ -401,14 +395,12 @@ require(
           //console.log('click write');
           try {
             var contractAddr = getContractAddr();
-            var contract = new web3.eth.Contract(
-              digioptionsContracts.digioptionsMarketListerAbi(),
-              contractAddr
-            );
+            var contract;
 
-            digioptionsContracts.getContractDescription(web3, contract)
+            digioptionsContracts.getContractInfo(web3, contractAddr)
               .then(function(contractDescription){
-                //console.log('contractDescription', contractDescription);
+                contract = contractDescription.contractMarketLister || contractDescription.contractMarkets;
+
                 if (contractDescription.contractType === digioptionsContracts.constants.contractType.DIGIOPTIONSMARKETS){
                   throw new Error('The given contract address:\r\n' + contractAddr + '\r\n is not a marketLister contract.');
                 }

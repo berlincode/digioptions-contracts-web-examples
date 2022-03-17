@@ -314,12 +314,8 @@ require(
 
           for (var contractDescriptionIdx in dataNetwork.contractDescriptions){
             var contractAddr = dataNetwork.contractDescriptions[contractDescriptionIdx].addr;
-            var contract = new web3.eth.Contract(
-              digioptionsContracts.digioptionsMarketsAbi(),
-              contractAddr
-            );
 
-            digioptionsContracts.getContractDescription(web3, contract)
+            digioptionsContracts.getContractInfo(web3, contractAddr)
               .then(function(contractDescription){
                 addItem('market: ' + contractDescription.marketsAddr, contractDescription.marketsAddr);
               })
