@@ -700,7 +700,7 @@ require.config({
     {
       name: 'digioptions-contracts.js',
       location: 'node_modules/digioptions-contracts.js',
-      main: 'js/index.js'
+      main: 'dist/umd/index.js'
     },
     {
       name: 'strophe.js',
@@ -1165,22 +1165,10 @@ require(
           if (dataNetwork){
             for (var contractDescriptionIdx in dataNetwork.contractDescriptions){
               var contractAddr = dataNetwork.contractDescriptions[contractDescriptionIdx].addr;
-              var contract = new web3.eth.Contract(
-                digioptionsContracts.digioptionsMarketsAbi(),
-                contractAddr
-              );
 
               // TODO set one contract as default ?
-              contract.methods.getContractInfo().call()
-                .then(function(contractInfo){
-                  if (! contractInfo){
-                    throw new Error('reading contract info/version failed');
-                  }
-                  var contractDescription = digioptionsContracts.contractInfoToContractDescription(
-                    web3,
-                    contractAddr,
-                    contractInfo
-                  );
+              digioptionsContracts.getContractInfo(web3, contractAddr)
+                .then(function(contractDescription){
                   if (contractDescription.contractType !== digioptionsContracts.constants.contractType.DIGIOPTIONSMARKETS){
                     addItem('marketListerContract', contractAddr);
                   }
@@ -1263,29 +1251,15 @@ require(
           evt.preventDefault();
           try {
             var contractAddr = getContractAddr();
-            var contract = new web3.eth.Contract(
-              digioptionsContracts.digioptionsMarketListerAbi(),
-              contractAddr
-            );
-
             var marketHash = getMarketHash();
+            var contract;
 
-            contract.methods.getContractInfo().call()
-              .then(function(contractInfo){
-                if (! contractInfo){
-                  throw new Error('reading contract info/version failed - maybe "contractAddr" is invalid');
-                }
-                var contractDescription = digioptionsContracts.contractInfoToContractDescription(
-                  web3,
-                  contractAddr,
-                  contractInfo
-                );
+            digioptionsContracts.getContractInfo(web3, contractAddr)
+              .then(function(contractDescription){
+                contract = contractDescription.contractMarketLister || contractDescription.contractMarkets;
                 if (contractDescription.contractType !== digioptionsContracts.constants.contractType.DIGIOPTIONSMARKETS){
-                  // switch to marketsContracts
-                  contract = new web3.eth.Contract(
-                    digioptionsContracts.digioptionsMarketsAbi(),
-                    contractDescription.marketsAddr
-                  );
+                  // always use marketsContracts
+                  contract = contractDescription.contractMarkets;
                 }
 
                 return contract.methods.getMarketDataByMarketHash(addrZero, marketHash).call();
@@ -1328,13 +1302,9 @@ require(
           evt.preventDefault();
           try {
 
-            var contract = new web3.eth.Contract(
-              digioptionsContracts.digioptionsMarketListerAbi(),
-              getContractAddr()
-            );
-
             var marketBaseData = getMarketBaseData();
             var marketHash = digioptionsContracts.marketHash(marketBaseData);
+            var contract;
 
             var signature;
             try {
@@ -1353,18 +1323,9 @@ require(
               }
             }
 
-            var contractDescription;
-
-            contract.methods.getContractInfo().call()
-              .then(function(contractInfo){
-                if (! contractInfo){
-                  throw new Error('reading contract info/version failed - maybe "contractAddr" is invalid');
-                }
-                contractDescription = digioptionsContracts.contractInfoToContractDescription(
-                  web3,
-                  getContractAddr(),
-                  contractInfo
-                );
+            digioptionsContracts.getContractInfo(web3, getContractAddr())
+              .then(function(contractDescription){
+                contract = contractDescription.contractMarketLister || contractDescription.contractMarkets;
 
                 if (contractDescription.contractType !== digioptionsContracts.constants.contractType.DIGIOPTIONSMARKETS){
                   return contract.methods.getMarketListerInfo().call();
@@ -1454,13 +1415,8 @@ require(
           evt.preventDefault();
           try {
 
-            var contract = new web3.eth.Contract(
-              digioptionsContracts.digioptionsMarketsAbi(),
-              getContractAddr()
-            );
-
             var marketHash = getMarketHash();
-
+            var contract;
             var signature;
             try {
               // TODO add support for named values
@@ -1469,22 +1425,12 @@ require(
               throw new Error('"signatureFinal" invalid');
             }
 
-            contract.methods.getContractInfo().call()
-              .then(function(contractInfo){
-                if (! contractInfo){
-                  throw new Error('reading contract info/version failed - maybe "contractAddr" is invalid');
-                }
-                var contractDescription = digioptionsContracts.contractInfoToContractDescription(
-                  web3,
-                  getContractAddr(),
-                  contractInfo
-                );
+            digioptionsContracts.getContractInfo(web3, getContractAddr())
+              .then(function(contractDescription){
+                contract = contractDescription.contractMarketLister || contractDescription.contractMarkets;
                 if (contractDescription.contractType !== digioptionsContracts.constants.contractType.DIGIOPTIONSMARKETS){
-                  // switch to marketsContracts
-                  contract = new web3.eth.Contract(
-                    digioptionsContracts.digioptionsMarketsAbi(),
-                    contractDescription.marketsAddr
-                  );
+                  // always use marketsContracts
+                  contract = contractDescription.contractMarkets;
                 }
 
                 return contract.methods.getMarketDataByMarketHash(addrZero, marketHash).call();
@@ -1555,20 +1501,12 @@ require(
           evt.preventDefault();
           try {
             var contractAddr = getContractAddr();
-            var contract = new web3.eth.Contract(
-              digioptionsContracts.digioptionsMarketListerAbi(),
-              contractAddr
-            );
-            contract.methods.getContractInfo().call()
-              .then(function(contractInfo){
-                if (! contractInfo){
-                  throw new Error('reading contract info/version failed');
-                }
-                var contractDescription = digioptionsContracts.contractInfoToContractDescription(
-                  web3,
-                  contractAddr,
-                  contractInfo
-                );
+            var contract;
+
+            digioptionsContracts.getContractInfo(web3, contractAddr)
+              .then(function(contractDescription){
+                contract = contractDescription.contractMarketLister || contractDescription.contractMarkets;
+
                 if (contractDescription.contractType !== digioptionsContracts.constants.contractType.DIGIOPTIONSMARKETLISTER){
                   throw new Error('The given contract address:\r\n' + contractAddr + '\r\n is not a marketLister contract.');
                 }
