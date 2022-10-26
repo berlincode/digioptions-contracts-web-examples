@@ -1030,9 +1030,9 @@ require(
         value = parseFloatOrThrowError(document.getElementById('finalValue').value, baseUnitExp, '"finalValue" invalid');
       } else {
         /* named market */
-// TODO is finalValue int128 like namedRange or int256?
+        // TODO is finalValue int128 like namedRange or int256?
         value = factsigner.stringToNamedRange(parseJsonString(document.getElementById('finalValue').value, '"finalValue" must be a (json) string'));
-// TODO check value in namedRanges!
+        // TODO check value in namedRanges!
       }
       return value;
     };
