@@ -243,18 +243,18 @@ require(
       'markets': {
         version: digioptionsContracts.versionMarkets,
         abi: digioptionsContracts.digioptionsMarketsAbi(),
-        bin: digioptionsMarketsBin()
+        bin: digioptionsMarketsBin.default()
       },
       'marketLister': {
         version: digioptionsContracts.versionMarketLister,
         abi: digioptionsContracts.digioptionsMarketListerAbi(),
-        bin: digioptionsMarketListerBin()
+        bin: digioptionsMarketListerBin.default()
       }
       ,
       'meta': {
         version: {major: 0, minor: 0, bugfix: 0}, // TODO
-        abi: digioptionsMetaAbi(),
-        bin: digioptionsMetaBin()
+        abi: digioptionsMetaAbi.default(),
+        bin: digioptionsMetaBin.default()
       }
     };
 
