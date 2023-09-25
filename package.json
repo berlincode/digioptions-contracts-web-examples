@@ -1,6 +1,6 @@
 {
   "name": "digioptions-contracts-web-examples",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "examples to create and settle markets for digioptions.com",
   "homepage": "https://github.com/berlincode/digioptions-contracts-web-examples",
   "license": "MIT",
@@ -30,9 +30,9 @@
   ],
   "dependencies": {
     "bootstrap": "~4.6.0",
-    "digioptions-contracts.js": "git+https://github.com/berlincode/digioptions-contracts.js.git",
-    "digioptions-tools.js": "git+https://github.com/berlincode/digioptions-tools.js.git",
-    "factsigner": "git+https://github.com/berlincode/factsigner.git",
+    "digioptions-contracts.js": "git+https://git@github.com/berlincode/digioptions-contracts.js.git",
+    "digioptions-tools.js": "git+https://git@github.com/berlincode/digioptions-tools.js.git",
+    "factsigner": "git+https://git@github.com/berlincode/factsigner.git",
     "font-awesome": "^4.7.0",
     "jquery": "^3.4.1",
     "popper.js": "^1.15.0",
